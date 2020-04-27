@@ -1,20 +1,15 @@
 """
 Msgpack serializer support for reading and writing pandas data structures
 to disk
-
 portions of msgpack_numpy package, by Lev Givon were incorporated
 into this module (and tests_packers.py)
-
 License
 =======
-
 Copyright (c) 2013, Lev Givon.
 All rights reserved.
-
 Redistribution and use in source and binary forms, with or without
 modification, are permitted provided that the following conditions are
 met:
-
 * Redistributions of source code must retain the above copyright
   notice, this list of conditions and the following disclaimer.
 * Redistributions in binary form must reproduce the above
@@ -24,7 +19,6 @@ met:
 * Neither the name of Lev Givon nor the names of any
   contributors may be used to endorse or promote products derived
   from this software without specific prior written permission.
-
 THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
 "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
 LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
@@ -38,6 +32,13 @@ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 """
 
+import sys 
+
+PY2 = sys.version_info[0] == 2
+PY3 = (sys.version_info[0] >= 3)
+PY35 = (sys.version_info >= (3, 5))
+PY36 = (sys.version_info >= (3, 6))
+
 from datetime import datetime, date, timedelta
 from dateutil.parser import parse
 import os
@@ -46,20 +47,48 @@ import warnings
 
 import numpy as np
 from pandas import compat
-from pandas.compat import u, u_safe
+try:
+    compat.string_types
+except AttributeError:
+    compat.string_types = (str,)
 
-from pandas.types.common import (is_categorical_dtype, is_object_dtype,
-                                 needs_i8_conversion, pandas_dtype)
+if PY3:
+    def u(s):
+        return s
+
+    def u_safe(s):
+        return s
+else:
+    def u(s):
+        return unicode(s, "unicode_escape")
+
+    def u_safe(s):
+        try:
+            return unicode(s, "unicode_escape")
+        except:
+            return s
+        
+
+try:
+    from pandas.core.dtypes.common import is_categorical_dtype, is_object_dtype, needs_i8_conversion, pandas_dtype
+except ImportError:
+    from pandas.types.common import is_categorical_dtype, is_object_dtype, needs_i8_conversion, pandas_dtype
+    
 
 from pandas import (Timestamp, Period, Series, DataFrame,  # noqa
                     Index, MultiIndex, Float64Index, Int64Index,
                     Panel, RangeIndex, PeriodIndex, DatetimeIndex, NaT,
                     Categorical, CategoricalIndex)
-from pandas.sparse.api import SparseSeries, SparseDataFrame
-from pandas.sparse.array import BlockIndex, IntIndex
+#from pandas.sparse.api import SparseSeries, SparseDataFrame
+#from pandas.sparse.array import BlockIndex, IntIndex
 from pandas.core.generic import NDFrame
-from pandas.core.common import PerformanceWarning
-from pandas.io.common import get_filepath_or_buffer
+#from pandas.core.common import PerformanceWarning
+#from pandas.io.common import get_filepath_or_buffer
+
+def get_filepath_or_buffer(*args, **kwargs):
+    from pandas.io.common import get_filepath_or_buffer
+    return get_filepath_or_buffer(*args, **kwargs)[:3]
+
 from pandas.core.internals import BlockManager, make_block, _safe_reshape
 import pandas.core.internals as internals
 
@@ -87,7 +116,6 @@ except ImportError:
 _check_zlib.__doc__ = dedent(
     """\
     Check if zlib is installed.
-
     Raises
     ------
     ImportError
@@ -107,7 +135,6 @@ except ImportError:
 _check_blosc.__doc__ = dedent(
     """\
     Check if blosc is installed.
-
     Raises
     ------
     ImportError
@@ -123,7 +150,6 @@ compressor = None
 def to_msgpack(path_or_buf, *args, **kwargs):
     """
     msgpack (serialize) object to input file path
-
     Parameters
     ----------
     path_or_buf : string File path, buffer-like, or None
@@ -164,18 +190,15 @@ def read_msgpack(path_or_buf, encoding='utf-8', iterator=False, **kwargs):
     """
     Load msgpack pandas object from the specified
     file path
-
     Parameters
     ----------
     path_or_buf : string File path, BytesIO like or string
     encoding: Encoding for decoding msgpack str type
     iterator : boolean, if True, return an iterator to the unpacker
                (default is False)
-
     Returns
     -------
     obj : type of object stored in file
-
     """
     path_or_buf, _, _ = get_filepath_or_buffer(path_or_buf)
     if iterator:
