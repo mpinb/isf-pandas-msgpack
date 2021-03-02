@@ -435,10 +435,10 @@ def encode(obj):
                 u'compress': compressor}
 
     elif isinstance(obj, Series):
-        if isinstance(obj, SparseSeries):
-            raise NotImplementedError(
-                'msgpack sparse series is not implemented'
-            )
+#         if isinstance(obj, SparseSeries):
+#             raise NotImplementedError(
+#                 'msgpack sparse series is not implemented'
+#             )
             # d = {'typ': 'sparse_series',
             #     'klass': obj.__class__.__name__,
             #     'dtype': obj.dtype.name,
@@ -449,19 +449,19 @@ def encode(obj):
             # for f in ['name', 'fill_value', 'kind']:
             #    d[f] = getattr(obj, f, None)
             # return d
-        else:
-            return {u'typ': u'series',
-                    u'klass': u(obj.__class__.__name__),
-                    u'name': getattr(obj, 'name', None),
-                    u'index': obj.index,
-                    u'dtype': u(obj.dtype.name),
-                    u'data': convert(obj.values),
-                    u'compress': compressor}
+#         else:
+        return {u'typ': u'series',
+                u'klass': u(obj.__class__.__name__),
+                u'name': getattr(obj, 'name', None),
+                u'index': obj.index,
+                u'dtype': u(obj.dtype.name),
+                u'data': convert(obj.values),
+                u'compress': compressor}
     elif issubclass(tobj, NDFrame):
-        if isinstance(obj, SparseDataFrame):
-            raise NotImplementedError(
-                'msgpack sparse frame is not implemented'
-            )
+#         if isinstance(obj, SparseDataFrame):
+#             raise NotImplementedError(
+#                 'msgpack sparse frame is not implemented'
+#             )
             # d = {'typ': 'sparse_dataframe',
             #     'klass': obj.__class__.__name__,
             #     'columns': obj.columns}
@@ -470,23 +470,23 @@ def encode(obj):
             # d['data'] = dict([(name, ss)
             #                 for name, ss in compat.iteritems(obj)])
             # return d
-        else:
+#         else:
 
-            data = obj._data
-            if not data.is_consolidated():
-                data = data.consolidate()
+        data = obj._data
+        if not data.is_consolidated():
+            data = data.consolidate()
 
-            # the block manager
-            return {u'typ': u'block_manager',
-                    u'klass': u(obj.__class__.__name__),
-                    u'axes': data.axes,
-                    u'blocks': [{u'locs': b.mgr_locs.as_array,
-                                 u'values': convert(b.values),
-                                 u'shape': b.values.shape,
-                                 u'dtype': u(b.dtype.name),
-                                 u'klass': u(b.__class__.__name__),
-                                 u'compress': compressor} for b in data.blocks]
-                    }
+        # the block manager
+        return {u'typ': u'block_manager',
+                u'klass': u(obj.__class__.__name__),
+                u'axes': data.axes,
+                u'blocks': [{u'locs': b.mgr_locs.as_array,
+                             u'values': convert(b.values),
+                             u'shape': b.values.shape,
+                             u'dtype': u(b.dtype.name),
+                             u'klass': u(b.__class__.__name__),
+                             u'compress': compressor} for b in data.blocks]
+                }
 
     elif isinstance(obj, (datetime, date, np.datetime64, timedelta,
                           np.timedelta64, NaTType)):
@@ -523,17 +523,17 @@ def encode(obj):
         return {u'typ': u'period',
                 u'ordinal': obj.ordinal,
                 u'freq': u(obj.freq)}
-    elif isinstance(obj, BlockIndex):
-        return {u'typ': u'block_index',
-                u'klass': u(obj.__class__.__name__),
-                u'blocs': obj.blocs,
-                u'blengths': obj.blengths,
-                u'length': obj.length}
-    elif isinstance(obj, IntIndex):
-        return {u'typ': u'int_index',
-                u'klass': u(obj.__class__.__name__),
-                u'indices': obj.indices,
-                u'length': obj.length}
+#     elif isinstance(obj, BlockIndex):
+#         return {u'typ': u'block_index',
+#                 u'klass': u(obj.__class__.__name__),
+#                 u'blocs': obj.blocs,
+#                 u'blengths': obj.blengths,
+#                 u'length': obj.length}
+#     elif isinstance(obj, IntIndex):
+#         return {u'typ': u'int_index',
+#                 u'klass': u(obj.__class__.__name__),
+#                 u'indices': obj.indices,
+#                 u'length': obj.length}
     elif isinstance(obj, np.ndarray):
         return {u'typ': u'ndarray',
                 u'shape': obj.shape,
