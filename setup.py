@@ -7,7 +7,7 @@ import pkg_resources
 from distutils.extension import Extension
 from distutils.command.build_ext import build_ext as build_ext
 
-NAME = 'pandas-msgpack'
+NAME = 'isf-pandas-msgpack'
 
 def is_platform_windows():
     return sys.platform == 'win32' or sys.platform == 'cygwin'
