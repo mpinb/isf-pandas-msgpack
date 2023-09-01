@@ -78,8 +78,10 @@ except ImportError:
 # Removed DataFrame, Panel and CategoricalIndex from pandas import
 # They are no longer accesed and in the case of Panel it got also
 # removed from later versions of pandas. (pandas <= 1.2) (Omar, 31.08.2023)
+# Removed Float64Index and Int64Index since they are not accesed 
+# and trigger a FutureWarning from pandas. (Omar, 01.09.2023)
 from pandas import (Timestamp, Period, Series, # noqa
-                    Index, MultiIndex, Float64Index, Int64Index,
+                    Index, MultiIndex,
                     RangeIndex, PeriodIndex, DatetimeIndex, NaT,
                     Categorical)
 #from pandas.sparse.api import SparseSeries, SparseDataFrame
@@ -92,7 +94,8 @@ def get_filepath_or_buffer(*args, **kwargs):
     from pandas.io.common import get_filepath_or_buffer
     return get_filepath_or_buffer(*args, **kwargs)[:3]
 
-from pandas.core.internals import BlockManager, make_block, _safe_reshape
+# _safe_reshape is no longer available in newer versions of pandas (Omar, 01.09.2023)
+from pandas.core.internals import BlockManager, make_block #, _safe_reshape
 import pandas.core.internals as internals
 
 from pandas_msgpack import _is_pandas_legacy_version
@@ -103,6 +106,39 @@ from pandas_msgpack._move import (
     BadMove as _BadMove,
     move_into_mutable_buffer as _move_into_mutable_buffer,
 )
+
+# _safe_reshape got removed from later version of pandas. (Omar, 31.08.2023)
+from pandas.core.dtypes.common import (
+    is_extension_array_dtype
+)
+from pandas.core.dtypes.generic import (
+    ABCSeries
+)
+
+def _safe_reshape(arr, new_shape):
+    """
+    If possible, reshape `arr` to have shape `new_shape`,
+    with a couple of exceptions (see gh-13012):
+
+    1) If `arr` is a ExtensionArray or Index, `arr` will be
+       returned as is.
+    2) If `arr` is a Series, the `_values` attribute will
+       be reshaped and returned.
+
+    Parameters
+    ----------
+    arr : array-like, object to be reshaped
+    new_shape : int or tuple of ints, the new shape
+    """
+    if isinstance(arr, ABCSeries):
+        arr = arr._values
+    if not is_extension_array_dtype(arr.dtype):
+        # Note: this will include TimedeltaArray and tz-naive DatetimeArray
+        # TODO(EA2D): special case will be unnecessary with 2D EAs
+        arr = np.asarray(arr).reshape(new_shape)
+    return arr
+
+
 
 NaTType = type(NaT)
 
