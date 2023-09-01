@@ -16,3 +16,11 @@
 
         update the version
         update the SHA256 (retrieve from PyPI)
+
+
+* register has been deprecated, Uploading also to PyPI testing  (UPDATED 31.08.2023)
+
+        git clean -xfd
+        python setup.py sdist --formats=gztar
+        python -m twine upload dist/* --verbose --repository-url https://test.pypi.org/legacy/
+        twine upload dist/*
