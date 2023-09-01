@@ -75,10 +75,13 @@ except ImportError:
     from pandas.types.common import is_categorical_dtype, is_object_dtype, needs_i8_conversion, pandas_dtype
     
 
-from pandas import (Timestamp, Period, Series, DataFrame,  # noqa
+# Removed DataFrame, Panel and CategoricalIndex from pandas import
+# They are no longer accesed and in the case of Panel it got also
+# removed from later versions of pandas. (pandas <= 1.2) (Omar, 31.08.2023)
+from pandas import (Timestamp, Period, Series, # noqa
                     Index, MultiIndex, Float64Index, Int64Index,
-                    Panel, RangeIndex, PeriodIndex, DatetimeIndex, NaT,
-                    Categorical, CategoricalIndex)
+                    RangeIndex, PeriodIndex, DatetimeIndex, NaT,
+                    Categorical)
 #from pandas.sparse.api import SparseSeries, SparseDataFrame
 #from pandas.sparse.array import BlockIndex, IntIndex
 from pandas.core.generic import NDFrame
