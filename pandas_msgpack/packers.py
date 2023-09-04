@@ -97,11 +97,14 @@ from pandas.core.generic import NDFrame
 # an IOArgs that contains the elements stated above. (Omar, 04.09.2023)
 # REF1: https://github.com/pandas-dev/pandas/blob/1.2.x/pandas/io/common.py
 # REF2: https://github.com/pandas-dev/pandas/blob/1.1.x/pandas/io/common.py
+# NOTE: In later versions of panda compression is returned as a Dict object
+# The compression is not used in packers. Therefore I decided only to
+# cast the dict to a string to keep the signature. (Omar, 04.09.2023) 
 def get_filepath_or_buffer(*args, **kwargs):
     try:
         from pandas.io.common import _get_filepath_or_buffer
         io_args = _get_filepath_or_buffer(*args, **kwargs)
-        return io_args.filepath_or_buffer, io_args.encoding, io_args.compression
+        return io_args.filepath_or_buffer, io_args.encoding, str(io_args.compression)
     except ImportError: # pandas < v 1.2
         from pandas.io.common import get_filepath_or_buffer
         return get_filepath_or_buffer(*args, **kwargs)[:3]
