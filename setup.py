@@ -83,6 +83,7 @@ setup(
     version=versioneer.get_version(),
     cmdclass=cmdclass,
     description="Pandas interface to msgpack",
+    long_description_content_type='text/x-rst',
     long_description=readme(),
     license='BSD License',
     author='The PyData Development Team',
