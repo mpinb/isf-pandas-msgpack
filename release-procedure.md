@@ -21,6 +21,15 @@
 * register has been deprecated, Uploading also to PyPI testing  (UPDATED 31.08.2023)
 
         git clean -xfd
-        python setup.py sdist --formats=gztar
+        python setup.py sdist --formats=gztar  bdist_wheel
+        python -m twine check dist/*
         python -m twine upload dist/* --verbose --repository-url https://test.pypi.org/legacy/
         twine upload dist/*
+
+* using .pypirc not passwords will be requested
+
+        git clean -xfd
+        python setup.py sdist --formats=gztar  bdist_wheel
+        python -m twine check dist/*
+        twine upload --repository testpypi dist/* --verbose
+        twine upload dist/* --verbose
