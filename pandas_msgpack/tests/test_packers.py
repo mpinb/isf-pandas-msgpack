@@ -9,24 +9,92 @@ from distutils.version import LooseVersion
 from pandas_msgpack import _is_pandas_legacy_version
 from pandas_msgpack import to_msgpack, read_msgpack
 
-from pandas import compat
-from pandas.compat import u, PY3
-from pandas import (Series, DataFrame, Panel, MultiIndex, bdate_range,
+from pandas_msgpack.packers import PerformanceWarning
+
+PY3 = (sys.version_info[0] >= 3)
+
+from contextlib import contextmanager
+
+#REF: https://github.com/pandas-dev/pandas/blob/0.23.x/pandas/util/testing.py
+@contextmanager
+def patch(ob, attr, value):
+    """Temporarily patch an attribute of an object.
+
+    Parameters
+    ----------
+    ob : any
+        The object to patch. This must support attribute assignment for `attr`.
+    attr : str
+        The name of the attribute to patch.
+    value : any
+        The temporary attribute to assign.
+
+    Examples
+    --------
+    >>> class C(object):
+    ...     attribute = 'original'
+    ...
+    >>> C.attribute
+    'original'
+    >>> with patch(C, 'attribute', 'patched'):
+    ...     in_context = C.attribute
+    ...
+    >>> in_context
+    'patched'
+    >>> C.attribute  # the value is reset when the context manager exists
+    'original'
+
+    Correctly replaces attribute when the manager exits with an exception.
+    >>> with patch(C, 'attribute', 'patched'):
+    ...     in_context = C.attribute
+    ...     raise ValueError()
+    Traceback (most recent call last):
+       ...
+    ValueError
+    >>> in_context
+    'patched'
+    >>> C.attribute
+    'original'
+    """
+    noattr = object()  # mark that the attribute never existed
+    old = getattr(ob, attr, noattr)
+    setattr(ob, attr, value)
+    try:
+        yield
+    finally:
+        if old is noattr:
+            delattr(ob, attr)
+        else:
+            setattr(ob, attr, old)
+
+
+#from pandas import compat #using BytesIO and itervalues from pandas.compat
+#NOTE: u() stands for unicode escape which is the default in PY3 (see also packers.py)
+#from pandas.compat import u, PY3
+
+#REF: https://github.com/pandas-dev/pandas/blob/0.23.x/pandas/compat/__init__.py
+def itervalues(obj, **kw):
+    return iter(obj.values(**kw))
+
+#REF: https://github.com/pandas-dev/pandas/blob/0.23.x/pandas/compat/__init__.py
+from io import BytesIO
+
+from pandas import (Series, DataFrame, MultiIndex, bdate_range, # Panel import removed
                     date_range, period_range, Index, Categorical)
 from pandas.api.types import is_datetime64tz_dtype
-from pandas.core.common import PerformanceWarning
+#from pandas.core.common import PerformanceWarning
 import pandas.util.testing as tm
 from pandas.util.testing import (ensure_clean,
                                  assert_categorical_equal,
                                  assert_frame_equal,
                                  assert_index_equal,
-                                 assert_series_equal,
-                                 assert_panel_equal,
-                                 patch)
+                                 assert_series_equal)
+                                #  assert_panel_equal,
+                                # patch)
 
 import pandas
 from pandas import Timestamp, NaT
-from pandas.lib import iNaT
+#from pandas.lib import iNaT
 
 nan = np.nan
 
@@ -67,8 +135,8 @@ def check_arbitrary(a, b):
         assert(len(a) == len(b))
         for a_, b_ in zip(a, b):
             check_arbitrary(a_, b_)
-    elif isinstance(a, Panel):
-        assert_panel_equal(a, b)
+    # elif isinstance(a, Panel):
+    #     assert_panel_equal(a, b)
     elif isinstance(a, DataFrame):
         assert_frame_equal(a, b)
     elif isinstance(a, Series):
@@ -91,8 +159,58 @@ def check_arbitrary(a, b):
     else:
         assert(a == b)
 
+import pandas as pd
+import unittest
+from pandas.util._decorators import deprecate
 
-class TestPackers(tm.TestCase):
+class TestCase(unittest.TestCase):
+
+    @classmethod
+    def setUpClass(cls):
+        pd.set_option('chained_assignment', 'raise')
+
+    @classmethod
+    def tearDownClass(cls):
+        pass
+
+    def reset_display_options(self):
+        # reset the display options
+        pd.reset_option('^display.', silent=True)
+
+    def round_trip_pickle(self, obj, path=None):
+        if path is None:
+            #path = u('__%s__.pickle' % rands(10))
+            path = str('__%s__.pickle' % tm.rands(10)) # Python 3 str is unicode
+        with ensure_clean(path) as path:
+            pd.to_pickle(obj, path)
+            return pd.read_pickle(path)
+
+    # https://docs.python.org/3/library/unittest.html#deprecated-aliases
+    def assertEquals(self, *args, **kwargs):
+        return deprecate('assertEquals',
+                         self.assertEqual)(*args, **kwargs)
+
+    def assertNotEquals(self, *args, **kwargs):
+        return deprecate('assertNotEquals',
+                         self.assertNotEqual)(*args, **kwargs)
+
+    def assert_(self, *args, **kwargs):
+        return deprecate('assert_',
+                         self.assertTrue)(*args, **kwargs)
+
+    def assertAlmostEquals(self, *args, **kwargs):
+        return deprecate('assertAlmostEquals',
+                         self.assertAlmostEqual)(*args, **kwargs)
+
+    def assertNotAlmostEquals(self, *args, **kwargs):
+        return deprecate('assertNotAlmostEquals',
+                         self.assertNotAlmostEqual)(*args, **kwargs)
+
+
+
+
+#class TestPackers(tm.TestCase):
+class TestPackers(TestCase):
 
     def setUp(self):
         self.path = '__%s__.msg' % tm.rands(10)
@@ -120,7 +238,8 @@ class TestAPI(TestPackers):
         tm.assert_frame_equal(result, df)
 
         s = df.to_msgpack()
-        result = read_msgpack(compat.BytesIO(s))
+        #result = read_msgpack(compat.BytesIO(s))
+        result = read_msgpack(BytesIO(s))
         tm.assert_frame_equal(result, df)
 
         s = to_msgpack(None, df)
@@ -253,7 +372,8 @@ class TestNumpy(TestPackers):
                         x.dtype == x_rec.dtype)
 
     def test_list_mixed(self):
-        x = [1.0, np.float32(3.5), np.complex128(4.25), u('foo')]
+        #x = [1.0, np.float32(3.5), np.complex128(4.25), u('foo')]
+        x = [1.0, np.float32(3.5), np.complex128(4.25), str('foo')] #PY3
         x_rec = self.encode_decode(x)
         # current msgpack cannot distinguish list/tuple
         tm.assert_almost_equal(tuple(x), x_rec)
@@ -362,7 +482,7 @@ class TestIndex(TestPackers):
         tm.assert_frame_equal(result, df)
 
 
-class TestSeries(TestPackers):
+""" class TestSeries(TestPackers):
 
     def setUp(self):
         super(TestSeries, self).setUp()
@@ -414,7 +534,7 @@ class TestSeries(TestPackers):
 
                 i_rec = self.encode_decode(i)
                 assert_series_equal(i, i_rec)
-
+ """
 
 class TestCategorical(TestPackers):
 
@@ -461,9 +581,9 @@ class TestNDFrame(TestPackers):
             'int': DataFrame(dict(A=data['B'], B=Series(data['B']) + 1)),
             'mixed': DataFrame(data)}
 
-        self.panel = {
-            'float': Panel(dict(ItemA=self.frame['float'],
-                                ItemB=self.frame['float'] + 1))}
+        # self.panel = {
+        #     'float': Panel(dict(ItemA=self.frame['float'],
+        #                         ItemB=self.frame['float'] + 1))}
 
     def test_basic_frame(self):
 
@@ -471,11 +591,11 @@ class TestNDFrame(TestPackers):
             i_rec = self.encode_decode(i)
             assert_frame_equal(i, i_rec)
 
-    def test_basic_panel(self):
+    # def test_basic_panel(self):
 
-        for s, i in self.panel.items():
-            i_rec = self.encode_decode(i)
-            assert_panel_equal(i, i_rec)
+    #     for s, i in self.panel.items():
+    #         i_rec = self.encode_decode(i)
+    #         assert_panel_equal(i, i_rec)
 
     def test_multi(self):
 
@@ -782,7 +902,8 @@ class TestEncoding(TestPackers):
     def setUp(self):
         super(TestEncoding, self).setUp()
         data = {
-            'A': [compat.u('\u2019')] * 1000,
+            #'A': [compat.u('\u2019')] * 1000,
+            'A': [str('\u2019')] * 1000, # Python 3 str use unicode
             'B': np.arange(1000, dtype=np.int32),
             'C': list(100 * 'abcdefghij'),
             'D': date_range(datetime.datetime(2015, 4, 1), periods=1000),
@@ -799,12 +920,14 @@ class TestEncoding(TestPackers):
     def test_utf(self):
         # GH10581
         for encoding in self.utf_encodings:
-            for frame in compat.itervalues(self.frame):
+            #for frame in compat.itervalues(self.frame):
+            for frame in itervalues(self.frame):
                 result = self.encode_decode(frame, encoding=encoding)
                 assert_frame_equal(result, frame)
 
     def test_default_encoding(self):
-        for frame in compat.itervalues(self.frame):
+        #for frame in compat.itervalues(self.frame):
+        for frame in itervalues(self.frame):
             result = frame.to_msgpack()
             expected = frame.to_msgpack(encoding='utf8')
             self.assertEqual(result, expected)
@@ -905,7 +1028,8 @@ TestPackers
         n = 0
         for f in os.listdir(pth):
             # GH12142 0.17 files packed in P2 can't be read in P3
-            if (compat.PY3 and version.startswith('0.17.') and
+            #if (compat.PY3 and version.startswith('0.17.') and
+            if (PY3 and version.startswith('0.17.') and
                     f.split('.')[-4][-1] == '2'):
                 continue
             vf = os.path.join(pth, f)

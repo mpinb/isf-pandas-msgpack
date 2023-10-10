@@ -34,6 +34,9 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 import sys 
 
+class PerformanceWarning(Warning):
+    pass
+
 PY2 = sys.version_info[0] == 2
 PY3 = (sys.version_info[0] >= 3)
 PY35 = (sys.version_info >= (3, 5))
@@ -49,9 +52,16 @@ import numpy as np
 from pandas import compat
 try:
     compat.string_types
+    compat.binary_type
 except AttributeError:
     compat.string_types = (str,)
+    compat.binary_type = bytes
 
+#REF: https://github.com/pandas-dev/pandas/blob/0.23.x/pandas/compat/__init__.py
+from io import BytesIO
+
+
+#NOTE: Assuming PY3
 if PY3:
     def u(s):
         return s
@@ -78,12 +88,17 @@ except ImportError:
 # Removed DataFrame, Panel and CategoricalIndex from pandas import
 # They are no longer accesed and in the case of Panel it got also
 # removed from later versions of pandas. (pandas <= 1.2) (Omar, 31.08.2023)
-# Removed Float64Index and Int64Index since they are not accesed 
+# Removed Float64Index and Int64Index since they are not accesed
 # and trigger a FutureWarning from pandas. (Omar, 01.09.2023)
-from pandas import (Timestamp, Period, Series, # noqa
-                    Index, MultiIndex,
+# Regarding Float64Index and Int64Index they got deprecated on pandas v 1.4.x
+# This is what is mentioned about them:
+# GH43028
+# Int64Index etc. are deprecated, but we still want them to be available in the dir.
+# Remove in Pandas 2.0, when we remove Int64Index etc. from the code base. 
+from pandas import (Timestamp, Period, Series, DataFrame, # noqa
+                    Index, MultiIndex, Float64Index, Int64Index,
                     RangeIndex, PeriodIndex, DatetimeIndex, NaT,
-                    Categorical)
+                    Categorical, CategoricalIndex)
 #from pandas.sparse.api import SparseSeries, SparseDataFrame
 #from pandas.sparse.array import BlockIndex, IntIndex
 from pandas.core.generic import NDFrame
@@ -233,7 +248,8 @@ def to_msgpack(path_or_buf, *args, **kwargs):
         with open(path_or_buf, mode) as fh:
             writer(fh)
     elif path_or_buf is None:
-        buf = compat.BytesIO()
+        #buf = compat.BytesIO()
+        buf = BytesIO()
         writer(buf)
         return buf.getvalue()
     else:
@@ -280,7 +296,8 @@ def read_msgpack(path_or_buf, encoding='utf-8', iterator=False, **kwargs):
     if isinstance(path_or_buf, compat.binary_type):
         fh = None
         try:
-            fh = compat.BytesIO(path_or_buf)
+            #fh = compat.BytesIO(path_or_buf)
+            fh = BytesIO(path_or_buf)
             return read(fh)
         finally:
             if fh is not None:
@@ -311,7 +328,7 @@ def dtype_for(t):
     """ return my dtype mapping, whether number or name """
     if t in dtype_dict:
         return dtype_dict[t]
-    return np.typeDict.get(t, t)
+    return np.sctypeDict.get(t, t) #np.typeDict is a deprecated alias of np.sctypeDict
 
 
 c2f_dict = {'complex': np.float64,
@@ -329,7 +346,8 @@ def c2f(r, i, ctype_name):
     """
 
     ftype = c2f_dict[ctype_name]
-    return np.typeDict[ctype_name](ftype(r) + 1j * ftype(i))
+    #np.typeDict is a deprecated alias of np.sctypeDict
+    return np.sctypeDict[ctype_name](ftype(r) + 1j * ftype(i))
 
 
 def convert(values):
@@ -736,7 +754,8 @@ def decode(obj):
     elif typ == u'int_index':
         return globals()[obj[u'klass']](obj[u'length'], obj[u'indices'])
     elif typ == u'ndarray':
-        return unconvert(obj[u'data'], np.typeDict[obj[u'dtype']],
+        #np.typeDict is a deprecated alias of np.sctypeDict
+        return unconvert(obj[u'data'], np.sctypeDict[obj[u'dtype']],
                          obj.get(u'compress')).reshape(obj[u'shape'])
     elif typ == u'np_scalar':
         if obj.get(u'sub_typ') == u'np_complex':
@@ -846,12 +865,14 @@ class Iterator(object):
                 if path_exists:
                     fh = open(self.path, 'rb')
                 else:
-                    fh = compat.BytesIO(self.path)
+                    #fh = compat.BytesIO(self.path)
+                    fh = BytesIO(self.path)
 
             else:
 
                 if not hasattr(self.path, 'read'):
-                    fh = compat.BytesIO(self.path)
+                    #fh = compat.BytesIO(self.path)
+                    fh = BytesIO(self.path)
 
                 else:
 
