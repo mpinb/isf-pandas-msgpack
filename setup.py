@@ -74,10 +74,6 @@ def readme():
     with open('README.rst') as f:
         return f.read()
 
-INSTALL_REQUIRES = (
-    ['pandas']
-)
-
 setup(
     name=NAME,
     version=versioneer.get_version(),
@@ -85,27 +81,8 @@ setup(
     description="Pandas interface to msgpack",
     long_description_content_type='text/x-rst',
     long_description=readme(),
-    license='BSD License',
-    author='The PyData Development Team',
-    author_email='pydata@googlegroups.com',
-    url='https://github.com/pydata/pandas-msgpack',
-    classifiers=[
-        'Development Status :: 4 - Beta',
-        'Environment :: Console',
-        'Intended Audience :: Science/Research',
-        'Operating System :: OS Independent',
-        'Programming Language :: Python',
-        'Programming Language :: Python :: 2',
-        'Programming Language :: Python :: 2.7',
-        'Programming Language :: Python :: 3',
-        'Programming Language :: Python :: 3.4',
-        'Programming Language :: Python :: 3.5',
-        'Programming Language :: Python :: 3.6',
-        'Topic :: Scientific/Engineering',
-    ],
     ext_modules=cythonize(extensions),
     keywords='data',
-    install_requires=INSTALL_REQUIRES,
     packages=['pandas_msgpack',
               'pandas_msgpack.includes',
               'pandas_msgpack.msgpack',
