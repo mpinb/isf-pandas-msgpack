@@ -55,13 +55,7 @@ try:
     compat.binary_type
 except AttributeError:
     compat.string_types = (str,)
-    compat.binary_type = bytes
 
-#REF: https://github.com/pandas-dev/pandas/blob/0.23.x/pandas/compat/__init__.py
-from io import BytesIO
-
-
-#NOTE: Assuming PY3
 if PY3:
     def u(s):
         return s
@@ -85,18 +79,8 @@ except ImportError:
     from pandas.types.common import is_categorical_dtype, is_object_dtype, needs_i8_conversion, pandas_dtype
     
 
-# Removed DataFrame, Panel and CategoricalIndex from pandas import
-# They are no longer accesed and in the case of Panel it got also
-# removed from later versions of pandas. (pandas <= 1.2) (Omar, 31.08.2023)
-# Removed Float64Index and Int64Index since they are not accesed
-# and trigger a FutureWarning from pandas. (Omar, 01.09.2023)
-# Regarding Float64Index and Int64Index they got deprecated on pandas v 1.4.x
-# This is what is mentioned about them:
-# GH43028
-# Int64Index etc. are deprecated, but we still want them to be available in the dir.
-# Remove in Pandas 2.0, when we remove Int64Index etc. from the code base. 
-from pandas import (Timestamp, Period, Series, DataFrame, # noqa
-                    Index, MultiIndex, Float64Index, Int64Index,
+from pandas import (Timestamp, Period, Series, DataFrame,  # noqa
+                    Index, MultiIndex,
                     RangeIndex, PeriodIndex, DatetimeIndex, NaT,
                     Categorical, CategoricalIndex)
 #from pandas.sparse.api import SparseSeries, SparseDataFrame
