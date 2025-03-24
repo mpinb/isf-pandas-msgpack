@@ -1,0 +1,99 @@
+[project]
+name = "isf-pandas-msgpack-test"
+description = "Pandas interface to msgpack - ISF patch"
+dynamic = ["version"]
+classifiers=[
+    'Development Status :: 4 - Beta',
+    'Environment :: Console',
+    'Intended Audience :: Science/Research',
+    'Operating System :: OS Independent',
+    'Programming Language :: Python',
+    'Programming Language :: Python :: 3',
+    'Programming Language :: Python :: 3.4',
+    'Programming Language :: Python :: 3.5',
+    'Programming Language :: Python :: 3.6',
+    'Programming Language :: Python :: 3.7',
+    'Programming Language :: Python :: 3.8',
+    'Topic :: Scientific/Engineering',
+]
+license = {file = 'LICENSE.md'}
+
+[tool.pixi.project]
+channels = ["conda-forge"]
+platforms = ["linux-64", "osx-arm64", "osx-64", "linux-aarch64", "win-64"]
+
+[build-system]
+build-backend = "setuptools.build_meta"
+requires = ["setuptools>=64", "Cython", "setuptools-scm>=8"]
+
+[dependency-groups]
+build = ["build>=1.2.2.post1,<2"]
+
+[tool.setuptools_scm]
+version_file = "isf_pandas_msgpack/_version.py"
+
+[tool.pixi.system-requirements]
+libc = "2.17"
+linux = "3.10.0"
+
+[tool.pixi.environments]
+build = ['build']
+test = ['test']
+pandas-v1.1 = ['pandas-v1.1']
+pandas-v1.2 = ['pandas-v1.2']
+pandas-v1.3 = ['pandas-v1.3']
+pandas-v1.4 = ['pandas-v1.4']
+pandas-v1.5 = ['pandas-v1.5']
+pandas-v2.0 = ['pandas-v2.0']
+pandas-v2.1 = ['pandas-v2.1']
+pandas-v2.2 = ['pandas-v2.2']
+
+# Build
+[tool.pixi.feature.build.dependencies]
+cython = ">=3.0.12,<4"
+twine = ">=6.1.0,<7"
+hatch = ">=1.14.0,<2"
+pip = ">=25.0.1,<26"
+setuptools_scm = ">=8.2.1,<9"
+[tool.pixi.feature.build.tasks]
+get_version = { cmd = [
+    "python", "-m", "setuptools_scm"
+    ], description = "Get the version of the package" }
+build_ext = { cmd = [
+    "python", "setup.py", "build_ext", "--inplace"
+    ], description = "Build the Cython extensions" }
+build = { cmd = [
+    "python", "-m", "build", "--sdist"
+    ], description = "Build the package" }
+
+# Test
+[tool.pixi.feature.test.dependencies]
+pytest = "*"
+blosc = ">=1.21.6,<2"
+[tool.pixi.feature.test.tasks]
+test = { cmd = [
+    "pytest", 
+    "--tb=short",
+    "-q", 
+    "--disable-warnings"
+    ], description = "Run the tests" }
+
+[tool.pixi.dependencies]
+pandas = ">=1.0.0,<2"
+
+[tool.pixi.feature.pandas-v1.1]
+dependencies = ["pandas>=1.1.0,<1.2"]
+[tool.pixi.feature.pandas-v1.2]
+dependencies = ["pandas>=1.2.0,<1.3"]
+[tool.pixi.feature.pandas-v1.3]
+dependencies = ["pandas>=1.3.0,<1.4"]
+[tool.pixi.feature.pandas-v1.4]
+dependencies = ["pandas>=1.4.0,<1.5"]
+[tool.pixi.feature.pandas-v1.5]
+dependencies = ["pandas>=1.5.0,<2"]
+[tool.pixi.feature.pandas-v2.0]
+dependencies = ["pandas>=2.0,<2.1"]
+[tool.pixi.feature.pandas-v2.1]
+dependencies = ["pandas>=2.1,<2.2"]
+[tool.pixi.feature.pandas-v2.2]
+dependencies = ["pandas>=2.2,<2.3"]
