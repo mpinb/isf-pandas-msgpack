@@ -75,7 +75,7 @@ else:
 
 try:
     from pandas.core.dtypes.common import (
-        is_categorical_dtype, 
+        # is_categorical_dtype, 
         is_object_dtype, 
         needs_i8_conversion, 
         pandas_dtype, 
@@ -84,7 +84,7 @@ try:
         )
 except ImportError:
     from pandas.types.common import (
-        is_categorical_dtype, 
+        # is_categorical_dtype, 
         is_object_dtype, 
         needs_i8_conversion, 
         pandas_dtype, 
@@ -94,17 +94,16 @@ except ImportError:
     
 
 from pandas import (Timestamp, Period, Series, DataFrame,  # noqa
-                    Index, MultiIndex, Int64Index, Float64Index,
+                    Index, MultiIndex,
                     RangeIndex, PeriodIndex, DatetimeIndex, NaT,
-                    Categorical, CategoricalIndex)
+                    Categorical, CategoricalIndex, CategoricalDtype)
 from pandas.core.arrays.sparse.array import BlockIndex, IntIndex
 from pandas.arrays import PeriodArray
-from pandas.core.arrays.sparse import SparseDtype
 from pandas.core.generic import NDFrame
 from pandas.core.dtypes.generic import ABCSeries
 from pandas.errors import PerformanceWarning
 
-from .pandas_compat import get_filepath_or_buffer
+from .pandas_compat import get_filepath_or_buffer, Int64Index, Float64Index, SparseDtype
 
 # from pandas_msgpack import _is_pandas_legacy_version
 from isf_pandas_msgpack.msgpack import (Unpacker as _Unpacker,
@@ -330,8 +329,11 @@ def convert(values):
 
     dtype = values.dtype
 
-    if is_categorical_dtype(values):
+    if isinstance(dtype, CategoricalDtype):
         return values
+
+    # if is_categorical_dtype(values):
+    #     return values
 
     elif is_object_dtype(dtype):
         return values.ravel().tolist()
@@ -373,8 +375,11 @@ def unconvert(values, dtype, compress=None):
     if as_is_ext:
         values = values.data
 
-    if is_categorical_dtype(dtype):
+    if isinstance(values, Categorical):
         return values
+    
+    # if is_categorical_dtype(dtype):
+    #     return values
 
     elif is_object_dtype(dtype):
         return np.array(values, dtype=object)
@@ -451,9 +456,9 @@ def encode(obj):
             return {u'typ': u'range_index',
                     u'klass': u(obj.__class__.__name__),
                     u'name': getattr(obj, 'name', None),
-                    u'start': getattr(obj, '_start', None),
-                    u'stop': getattr(obj, '_stop', None),
-                    u'step': getattr(obj, '_step', None)}
+                    u'start': getattr(obj, 'start', None),
+                    u'stop': getattr(obj, 'stop', None),
+                    u'step': getattr(obj, 'step', None)}
         elif isinstance(obj, PeriodIndex):
             return {u'typ': u'period_index',
                     u'klass': u(obj.__class__.__name__),
@@ -554,13 +559,15 @@ def encode(obj):
             tz = obj.tzinfo
             if tz is not None:
                 tz = u(tz.zone)
-            freq = obj.freq
+            # Handle freq attribute for pandas versions < 2.0
+            enc_obj = {u'typ': u'timestamp',
+                    u'value': obj.value,
+                    u'tz': tz}
+            freq = getattr(obj, 'freq', None)
             if freq is not None:
                 freq = u(freq.freqstr)
-            return {u'typ': u'timestamp',
-                    u'value': obj.value,
-                    u'freq': freq,
-                    u'tz': tz}
+                enc_obj[u'freq'] = freq
+            return enc_obj
         if isinstance(obj, NaTType):
             return {u'typ': u'nat'}
         elif isinstance(obj, np.timedelta64):
@@ -629,8 +636,11 @@ def decode(obj):
     if typ is None:
         return obj
     elif typ == u'timestamp':
-        freq = obj[u'freq'] if 'freq' in obj else obj[u'offset']
-        return Timestamp(obj[u'value'], tz=obj[u'tz'], freq=freq)
+        if "freq" in obj or "offset" in obj:
+            freq = obj[u'freq'] if 'freq' in obj else obj[u'offset']
+            return Timestamp(obj[u'value'], tz=obj[u'tz'], freq=freq)
+        else:
+            return Timestamp(obj[u'value'], tz=obj[u'tz'])
     elif typ == u'nat':
         return NaT
     elif typ == u'period':
@@ -641,10 +651,11 @@ def decode(obj):
                          obj.get(u'compress'))
         return globals()[obj[u'klass']](data, dtype=dtype, name=obj[u'name'])
     elif typ == u'range_index':
-        return globals()[obj[u'klass']](obj[u'start'],
-                                        obj[u'stop'],
-                                        obj[u'step'],
-                                        name=obj[u'name'])
+        return globals()[obj[u'klass']](
+            obj[u'start'],
+            obj[u'stop'],
+            obj[u'step'],
+            name=obj[u'name'])
     elif typ == u'multi_index':
         dtype = dtype_for(obj[u'dtype'])
         data = unconvert(obj[u'data'], dtype,

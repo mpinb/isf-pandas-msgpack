@@ -39,3 +39,15 @@ else:
             # TODO(EA2D): special case will be unnecessary with 2D EAs
             arr = np.asarray(arr).reshape(new_shape)
         return arr
+
+        
+if LooseVersion(pandas.__version__) < LooseVersion("2.0"):
+    from pandas import Int64Index, Float64Index
+else:
+    Int64Index = None
+    Float64Index = None
+
+if LooseVersion(pandas.__version__) < LooseVersion("2.1"):
+    from pandas.core.arrays.sparse import SparseDtype
+else:
+    from pandas import SparseDtype
