@@ -609,16 +609,17 @@ def encode(obj):
                 u'data': convert(obj),
                 u'compress': compressor}
     elif isinstance(obj, np.number):
+        # don't use __repr__, breaks in numpy > 2.0 as it no longer represents just the number - bjorge 2.25-03-24
         if np.iscomplexobj(obj):
             return {u'typ': u'np_scalar',
                     u'sub_typ': u'np_complex',
                     u'dtype': u(obj.dtype.name),
-                    u'real': u(obj.real.__repr__()),
-                    u'imag': u(obj.imag.__repr__())}
+                    u'real': u(obj.real.item()),
+                    u'imag': u(obj.imag.item())}
         else:
             return {u'typ': u'np_scalar',
                     u'dtype': u(obj.dtype.name),
-                    u'data': u(obj.__repr__())}
+                    u'data': u(obj.item())} 
     elif isinstance(obj, complex):
         return {u'typ': u'np_complex',
                 u'real': u(obj.real.__repr__()),
@@ -775,7 +776,7 @@ def decode(obj):
             try:
                 return dtype(obj[u'data'])
             except:
-                return dtype.type(obj[u'data'])
+               return dtype.type(obj[u'data'])
     elif typ == u'np_complex':
         return complex(obj[u'real'] + u'+' + obj[u'imag'] + u'j')
     elif isinstance(obj, (dict, list, set)):
