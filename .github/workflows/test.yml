@@ -27,7 +27,7 @@ jobs:
           cache-write: ${{ github.event_name == 'push' && github.ref_name == 'main' }}
 
       - name: Build the extensions
-        run: pixi r build_ext
+        run: pixi r -e test-pandas-v${{ matrix.pandas-version }} build_ext
 
       - name: Run tests
-        run: pixi r -e pandas-v${{ matrix.pandas-version }} test
+        run: pixi r -e test-pandas-v${{ matrix.pandas-version }} test
