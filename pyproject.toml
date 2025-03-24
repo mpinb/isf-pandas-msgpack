@@ -37,17 +37,17 @@ libc = "2.17"
 linux = "3.10.0"
 
 [tool.pixi.environments]
-default = ["run"]
-build = ['build']
-test = ['test']
-pandas-v11 = ['pandas-v11']
-pandas-v12 = ['pandas-v12']
-pandas-v13 = ['pandas-v13']
-pandas-v14 = ['pandas-v14']
-pandas-v15 = ['pandas-v15']
-pandas-v20 = ['pandas-v20']
-pandas-v21 = ['pandas-v21']
-pandas-v22 = ['pandas-v22']
+default = ['run']
+build = ['run', 'build']
+test = ['run', 'test']
+test-pandas-v11 = ['pandas-v11', "test", 'build']
+test-pandas-v12 = ['pandas-v12', "test", 'build']
+test-pandas-v13 = ['pandas-v13', "test", 'build']
+test-pandas-v14 = ['pandas-v14', "test", 'build']
+test-pandas-v15 = ['pandas-v15', "test", 'build']
+test-pandas-v20 = ['pandas-v20', "test", 'build']
+test-pandas-v21 = ['pandas-v21', "test", 'build']
+test-pandas-v22 = ['pandas-v22', "test", 'build']
 
 # Build
 [tool.pixi.feature.build.dependencies]
