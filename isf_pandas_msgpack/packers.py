@@ -102,38 +102,9 @@ from pandas.arrays import PeriodArray
 from pandas.core.arrays.sparse import SparseDtype
 from pandas.core.generic import NDFrame
 from pandas.core.dtypes.generic import ABCSeries
-from pandas.io.common import _get_filepath_or_buffer
 from pandas.errors import PerformanceWarning
 
-
-def get_filepath_or_buffer(*args, **kwargs):
-    io_args = _get_filepath_or_buffer(*args, **kwargs)
-    fpb, encoding, compression = io_args.filepath_or_buffer, io_args.encoding, io_args.compression
-    return fpb, encoding, compression
-
-
-def _safe_reshape(arr, new_shape):
-    """
-    If possible, reshape `arr` to have shape `new_shape`,
-    with a couple of exceptions (see gh-13012):
-
-    1) If `arr` is a ExtensionArray or Index, `arr` will be
-       returned as is.
-    2) If `arr` is a Series, the `_values` attribute will
-       be reshaped and returned.
-
-    Parameters
-    ----------
-    arr : array-like, object to be reshaped
-    new_shape : int or tuple of ints, the new shape
-    """
-    if isinstance(arr, ABCSeries):
-        arr = arr._values
-    if not is_extension_array_dtype(arr.dtype):
-        # Note: this will include TimedeltaArray and tz-naive DatetimeArray
-        # TODO(EA2D): special case will be unnecessary with 2D EAs
-        arr = np.asarray(arr).reshape(new_shape)
-    return arr
+from .pandas_compat import get_filepath_or_buffer
 
 # from pandas_msgpack import _is_pandas_legacy_version
 from isf_pandas_msgpack.msgpack import (Unpacker as _Unpacker,
@@ -739,11 +710,13 @@ def decode(obj):
                 placement = b[u'locs']
             else:
                 placement = axes[0].get_indexer(b[u'items'])
-            return make_block(values=values,
-                              klass=getattr(internals.blocks, b[u'klass']),
-                              placement=placement,
-                              dtype=b[u'dtype'])
 
+            return make_block(
+                values=values,
+                klass=getattr(internals.blocks, b[u'klass']),
+                placement=placement,
+                dtype=b[u'dtype'])
+    
         blocks = [create_block(b) for b in obj[u'blocks']]
         return globals()[obj[u'klass']](BlockManager(blocks, list(axes)))
     elif typ == u'datetime':

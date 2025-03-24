@@ -10,21 +10,27 @@ import random, string
 from isf_pandas_msgpack import to_msgpack, read_msgpack
 from isf_pandas_msgpack.packers import unpack
 
-import pandas as pd
+import pandas
 from pandas import (Series, DataFrame, MultiIndex, bdate_range,
                     date_range, period_range, Index, Categorical)
 from pandas.errors import PerformanceWarning
+
+if LooseVersion(pandas.__version__) < LooseVersion("1.3"):
+    # prior to pandas 1.3.0, pandas._testing was a module, not a package
+    from pandas._testing import ensure_clean
+else:
+    from pandas._testing.contexts import ensure_clean
+
 import pandas._testing as tm
 from pandas._testing import (
     assert_frame_equal,
     assert_index_equal,
     assert_series_equal,
     assert_categorical_equal
-)
-from pandas._testing.contexts import ensure_clean
+)   
+
 from unittest.mock import patch
 
-import pandas
 import pandas.io as pio
 from pandas import Timestamp, NaT
 
@@ -270,7 +276,7 @@ class TestBasic(TestPackers):
 
     def test_nat(self):
         nat_rec = self.encode_decode(NaT)
-        assert pd.isnull(nat_rec)
+        assert pandas.isnull(nat_rec)
 
     def test_datetimes(self):
 
@@ -441,11 +447,15 @@ class TestNDFrame(TestPackers):
             'C': ['foo1', 'foo2', 'foo3', 'foo4', 'foo5'],
             'D': date_range('1/1/2009', periods=5),
             'E': [0., 1, Timestamp('20100101'), 'foo', 2.],
-            'F': [Timestamp('20130102', tz='US/Eastern')] * 5,
-            'G': [Timestamp('20130603', tz='CET')] * 5,
             'H': Categorical(['a', 'b', 'c', 'd', 'e']),
             'I': Categorical(['a', 'b', 'c', 'd', 'e'], ordered=True),
         }
+        
+        cls.datetime_frame = {
+            "datetime": DataFrame({
+            'F': [Timestamp('20130102', tz='US/Eastern')] * 5,
+            'G': [Timestamp('20130603', tz='CET')] * 5,
+        })}
 
         cls.frame = {
             'float': DataFrame(dict(A=data['A'], B=Series(data['A']) + 1)),
@@ -453,13 +463,19 @@ class TestNDFrame(TestPackers):
             'mixed': DataFrame(data)}
 
     def test_basic_frame(self):
-
         for s, i in self.frame.items():
             i_rec = self.encode_decode(i)
             assert_frame_equal(i, i_rec)
 
-    def test_multi(self):
+    @pytest.mark.skipif(
+        LooseVersion(pandas.__version__) < LooseVersion('1.3'), 
+        reason="Prior to pandas 1.3, timezones were saved as a data attribute. This has since changed to be part of the dtype")
+    def test_datetime(self):
+        i_rec = self.encode_decode(self.datetime_frame)
+        for k in self.datetime_frame.keys():
+            assert_frame_equal(self.datetime_frame[k], i_rec[k])
 
+    def test_multi(self):
         i_rec = self.encode_decode(self.frame)
         for k in self.frame.keys():
             assert_frame_equal(self.frame[k], i_rec[k])
@@ -523,7 +539,7 @@ class TestSparse(TestPackers):
         # currently these are not implemetned
         i_rec = self.encode_decode(obj)
         # comparator(obj, i_rec, **kwargs)
-        raise ValueError("{}\n{}".format(obj, pd.Series(i_rec)))
+        raise ValueError("{}\n{}".format(obj, pandas.Series(i_rec)))
         with pytest.raises(NotImplementedError):
             self.encode_decode(obj)
 
