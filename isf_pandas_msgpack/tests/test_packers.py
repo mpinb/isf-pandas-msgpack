@@ -95,7 +95,9 @@ def check_arbitrary(a, b):
 class TestPackers:
 
     def setup_class(cls):
-        cls.path = '__%s__.msg' % random_string(10)
+        cls.tmpdir = tempfile.mkdtemp()
+        cls.f = '__%s__.msg' % random_string(10)
+        cls.path = os.path.join(cls.tmpdir, cls.f)
 
     def teardown_class(self):
         pass
