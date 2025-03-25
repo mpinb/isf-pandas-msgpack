@@ -60,8 +60,8 @@ def test_compression_zlib(pandas_dataframe):
     _test_compression(pandas_dataframe, 'zlib')
 
 @pytest.mark.skipif(not _BLOSC_INSTALLED, reason="blosc not installed")
-def test_compression_blosc(self):
-    _test_compression('blosc')
+def test_compression_blosc(pandas_dataframe):
+    _test_compression(pandas_dataframe, 'blosc')
 
 def _test_compression_warns_when_decompress_caches(pandas_dataframe, compress):
     not_garbage = []
@@ -179,10 +179,6 @@ def test_readonly_axis_zlib():
 @pytest.mark.skipif(not _BLOSC_INSTALLED, reason="blosc not installed")
 def test_readonly_axis_blosc_to_sql():
     # GH11880
-    if not _BLOSC_INSTALLED:
-        pytest.skip('no blosc')
-    if not _SQLALCHEMY_INSTALLED:
-        pytest.skip('no sqlalchemy')
     expected = pd.DataFrame({'A': list('abcd')})
     df = encode_decode(None, expected, compress='blosc')
     eng = _create_sql_engine("sqlite:///:memory:")
@@ -191,12 +187,11 @@ def test_readonly_axis_blosc_to_sql():
     result.index.names = [None]
     assert_frame_equal(expected, result)
 
+
+@pytest.mark.skipif(not _SQLALCHEMY_INSTALLED, reason="sqlalchemy not installed")
+@pytest.mark.skipif(not _ZLIB_INSTALLED, reason="zlib not installed")
 def test_readonly_axis_zlib_to_sql():
     # GH11880
-    if not _ZLIB_INSTALLED:
-        pytest.skip('no zlib')
-    if not _SQLALCHEMY_INSTALLED:
-        pytest.skip('no sqlalchemy')
     expected = pd.DataFrame({'A': list('abcd')})
     df = encode_decode(None, expected, compress='zlib')
     eng = _create_sql_engine("sqlite:///:memory:")
