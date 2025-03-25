@@ -32,46 +32,11 @@ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 """
 
-import sys 
-
-class PerformanceWarning(Warning):
-    pass
-
-PY2 = sys.version_info[0] == 2
-PY3 = (sys.version_info[0] >= 3)
-PY35 = (sys.version_info >= (3, 5))
-PY36 = (sys.version_info >= (3, 6))
-
+import os, io
+import numpy as np
 from datetime import datetime, date, timedelta
 from dateutil.parser import parse
-import os
 from textwrap import dedent
-
-import numpy as np
-import io
-# from pandas import compat
-# try:
-#     compat.string_types
-# except AttributeError:
-#     compat.string_types = (str,)
-STRING_TYPES = (str,)
-
-if PY3:
-    def u(s):
-        return s
-
-    def u_safe(s):
-        return s
-else:
-    def u(s):
-        return unicode(s, "unicode_escape")
-
-    def u_safe(s):
-        try:
-            return unicode(s, "unicode_escape")
-        except:
-            return s
-        
 
 try:
     from pandas.core.dtypes.common import (
@@ -91,7 +56,6 @@ except ImportError:
         is_extension_array_dtype,
         PeriodDtype
         )
-    
 
 from pandas import (
     Timestamp, 
@@ -112,33 +76,67 @@ from pandas.core.arrays.sparse.array import BlockIndex, IntIndex
 from pandas.arrays import PeriodArray
 from pandas.core.generic import NDFrame
 from pandas.core.dtypes.generic import ABCSeries
+from pandas.core.dtypes.common import is_extension_array_dtype
 from pandas.errors import PerformanceWarning
-
 from .pandas_compat import (
     get_filepath_or_buffer, 
     Int64Index, 
     Float64Index, 
     SparseDtype, 
     PANDAS_GE_300, 
-    PANDAS_GE_210
+    PANDAS_GE_210,
+    u,
+    u_safe,
+    STRING_TYPES
     )
 
-# from pandas_msgpack import _is_pandas_legacy_version
 from isf_pandas_msgpack.msgpack import (
     Unpacker as _Unpacker,
     Packer as _Packer,
-    ExtType)
+    ExtType
+)
 from isf_pandas_msgpack._move import (
     BadMove as _BadMove,
     move_into_mutable_buffer as _move_into_mutable_buffer,
 )
+NaTType = type(NaT)
 
-from pandas.core.dtypes.common import (
-    is_extension_array_dtype
-)
-from pandas.core.dtypes.generic import (
-    ABCSeries
-)
+# check which compression libs we have installed
+try:
+    import zlib
+    def _check_zlib():
+        pass
+except ImportError:
+    def _check_zlib():
+        raise ImportError('zlib is not installed')
+
+try:
+    import blosc
+    def _check_blosc():
+        pass
+except ImportError:
+    def _check_blosc():
+        raise ImportError('blosc is not installed')
+
+# until we can pass this into our conversion functions,
+# this is pretty hacky
+compressor = None
+
+dtype_dict = {
+    21: np.dtype('M8[ns]'),
+    u('datetime64[ns]'): np.dtype('M8[ns]'),
+    u('datetime64[us]'): np.dtype('M8[us]'),
+    22: np.dtype('m8[ns]'),
+    u('timedelta64[ns]'): np.dtype('m8[ns]'),
+    u('timedelta64[us]'): np.dtype('m8[us]'),
+
+    # this is platform int, which we need to remap to np.int64
+    # for compat on windows platforms
+    7: np.dtype('int64'),
+    'category': 'category'
+    }
+
+
 
 def _safe_reshape(arr, new_shape):
     """
@@ -162,53 +160,6 @@ def _safe_reshape(arr, new_shape):
         # TODO(EA2D): special case will be unnecessary with 2D EAs
         arr = np.asarray(arr).reshape(new_shape)
     return arr
-
-
-
-NaTType = type(NaT)
-
-# check which compression libs we have installed
-try:
-    import zlib
-
-    def _check_zlib():
-        pass
-except ImportError:
-    def _check_zlib():
-        raise ImportError('zlib is not installed')
-
-_check_zlib.__doc__ = dedent(
-    """\
-    Check if zlib is installed.
-    Raises
-    ------
-    ImportError
-        Raised when zlib is not installed.
-    """,
-)
-
-try:
-    import blosc
-
-    def _check_blosc():
-        pass
-except ImportError:
-    def _check_blosc():
-        raise ImportError('blosc is not installed')
-
-_check_blosc.__doc__ = dedent(
-    """\
-    Check if blosc is installed.
-    Raises
-    ------
-    ImportError
-        Raised when blosc is not installed.
-    """,
-)
-
-# until we can pass this into our conversion functions,
-# this is pretty hacky
-compressor = None
 
 
 def to_msgpack(path_or_buf, *args, **kwargs):
@@ -301,20 +252,6 @@ def read_msgpack(path_or_buf, encoding='utf-8', iterator=False, **kwargs):
         return read(path_or_buf)
 
     raise ValueError('path_or_buf needs to be a string file path or file-like')
-
-
-dtype_dict = {21: np.dtype('M8[ns]'),
-              u('datetime64[ns]'): np.dtype('M8[ns]'),
-              u('datetime64[us]'): np.dtype('M8[us]'),
-              22: np.dtype('m8[ns]'),
-              u('timedelta64[ns]'): np.dtype('m8[ns]'),
-              u('timedelta64[us]'): np.dtype('m8[us]'),
-
-              # this is platform int, which we need to remap to np.int64
-              # for compat on windows platforms
-              7: np.dtype('int64'),
-              'category': 'category'
-              }
 
 
 def dtype_for(t):
@@ -652,7 +589,7 @@ def encode(obj):
     return obj
 
 
-def create_block(b, axes):
+def _create_block(b, axes):
     from pandas.core.internals import make_block
     import pandas.core.internals as internals
     values = _safe_reshape(unconvert(
@@ -682,7 +619,7 @@ def _decode_block_manager(obj):
     #     )
     # else:
     from pandas.core.internals import BlockManager
-    blocks = [create_block(b=b, axes=axes) for b in obj[u'blocks']]
+    blocks = [_create_block(b=b, axes=axes) for b in obj[u'blocks']]
     mgr = BlockManager(blocks, list(axes))
     if PANDAS_GE_210:
         return DataFrame._from_mgr(mgr, axes=axes)

@@ -1,11 +1,15 @@
 import pandas as pd
 from packaging.version import Version
+import sys
 
 PANDAS_ST_200 = Version(pd.__version__).release < (2, 0, 0)
 PANDAS_ST_210 = Version(pd.__version__).release < (2, 1, 0)
 PANDAS_ST_120 = Version(pd.__version__).release < (1, 2, 0)
 PANDAS_GE_210 = Version(pd.__version__).release >= (2, 1, 0)
 PANDAS_GE_300 =  Version(pd.__version__).major >= 3
+PY3 = (sys.version_info[0] >= 3)
+STRING_TYPES = (str,)
+
 
 if PANDAS_ST_120:
     from pandas.core.internals import _safe_reshape
@@ -54,3 +58,20 @@ if PANDAS_ST_210:
     from pandas.core.arrays.sparse import SparseDtype
 else:
     from pandas import SparseDtype
+
+    
+if PY3:
+    def u(s):
+        return s
+
+    def u_safe(s):
+        return s
+else:
+    def u(s):
+        return unicode(s, "unicode_escape")
+
+    def u_safe(s):
+        try:
+            return unicode(s, "unicode_escape")
+        except:
+            return s
