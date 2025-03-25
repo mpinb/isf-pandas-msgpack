@@ -1,7 +1,6 @@
 import datetime, pytest, sys
 import numpy as np
 import pandas as pd
-from distutils.version import LooseVersion
 from . import encode_decode
 
 def test_timestamp():
@@ -16,7 +15,7 @@ def test_nat():
     assert pd.isnull(nat_rec)
 
 @pytest.mark.skipif(
-    LooseVersion(sys.version) < '2.7',
+    sys.version_info < (2, 7),
     reason='datetime64 broken in 2.6')
 def test_datetimes():
     for i in [datetime.datetime(2013, 1, 1),

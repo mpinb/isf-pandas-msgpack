@@ -3,7 +3,7 @@ import pytest
 import numpy as np
 import pandas as pd
 from pandas.testing import assert_frame_equal
-from distutils.version import LooseVersion
+from packaging.version import Version
 
 
 # class TestNDFrame(TestPackers):
@@ -14,7 +14,7 @@ def test_basic_frame(pandas_dataframe):
         assert_frame_equal(i, i_rec)
 
 @pytest.mark.skipif(
-    LooseVersion(pd.__version__) < LooseVersion('1.3'), 
+    Version(pd.__version__) < Version('1.3'), 
     reason="Prior to pandas 1.3, timezones were saved as a data attribute. This has since changed to be part of the dtype")
 def test_datetime(pandas_datetime_dataframe):
     i_rec = encode_decode(None, pandas_datetime_dataframe)

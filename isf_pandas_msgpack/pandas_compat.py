@@ -1,7 +1,7 @@
 import pandas
-from distutils.version import LooseVersion
+from packaging.version import Version
 
-if LooseVersion(pandas.__version__) < LooseVersion("1.2"):
+if Version(pandas.__version__) < Version("1.2"):
     from pandas.io.common import get_filepath_or_buffer as _get_filepath_or_buffer
     def get_filepath_or_buffer(*args, **kwargs):
         fpb, encoding, compression, _ = _get_filepath_or_buffer(*args, **kwargs)
@@ -14,7 +14,7 @@ else:
         return fpb, encoding, compression
 
         
-if LooseVersion(pandas.__version__) < LooseVersion("1.2"):
+if Version(pandas.__version__) < Version("1.2"):
     from pandas.core.internals import _safe_reshape
 else:
     def _safe_reshape(arr, new_shape):
@@ -41,13 +41,13 @@ else:
         return arr
 
         
-if LooseVersion(pandas.__version__) < LooseVersion("2.0"):
+if Version(pandas.__version__) < Version("2.0"):
     from pandas import Int64Index, Float64Index
 else:
     Int64Index = None
     Float64Index = None
 
-if LooseVersion(pandas.__version__) < LooseVersion("2.1"):
+if Version(pandas.__version__) < Version("2.1"):
     from pandas.core.arrays.sparse import SparseDtype
 else:
     from pandas import SparseDtype

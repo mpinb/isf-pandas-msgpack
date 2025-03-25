@@ -74,9 +74,6 @@ blosc = ">=1.21.6,<2"
 [tool.pixi.feature.test.tasks]
 test = { cmd = [
     "pytest", 
-    "--tb=short",
-    "-q", 
-    "--disable-warnings"
     ], description = "Run the tests" }
 
 [tool.pixi.feature.run.dependencies]
