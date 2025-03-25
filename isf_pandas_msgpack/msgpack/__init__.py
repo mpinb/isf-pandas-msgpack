@@ -2,8 +2,10 @@
 
 from collections import namedtuple
 
-from pandas_msgpack.msgpack.exceptions import *  # noqa
-from pandas_msgpack.msgpack._version import version  # noqa
+from isf_pandas_msgpack.msgpack.exceptions import *  # noqa
+from isf_pandas_msgpack.msgpack._version import version
+# import pyximport
+# pyximport.install()
 
 
 class ExtType(namedtuple('ExtType', 'code data')):
@@ -19,8 +21,8 @@ class ExtType(namedtuple('ExtType', 'code data')):
 
 import os  # noqa
 
-from pandas_msgpack.msgpack._packer import Packer  # noqa
-from pandas_msgpack.msgpack._unpacker import unpack, unpackb, Unpacker  # noqa
+from isf_pandas_msgpack.msgpack._packer import Packer  # noqa
+from isf_pandas_msgpack.msgpack._unpacker import unpack, unpackb, Unpacker  # noqa
 
 
 def pack(o, stream, **kwargs):
