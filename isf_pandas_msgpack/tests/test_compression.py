@@ -43,7 +43,7 @@ def _test_compression(pandas_dataframe, compress):
         expected = pandas_dataframe[k]
         assert_frame_equal(value, expected)
         # make sure that we can write to the new frames
-        for block in value._data.blocks:
+        for block in value._mgr.blocks:
             if isinstance(block.values, np.ndarray):
                 assert block.values.flags.writeable
             else:
@@ -55,17 +55,11 @@ def _test_compression(pandas_dataframe, compress):
                     # DatetimeArrays are still experimental with changing API - just pass... - Bjorge 2025-03-24
                     pass
 
-@pytest.mark.skipif(
-    not _ZLIB_INSTALLED,
-    reason="zlib not installed",
-)
+@pytest.mark.skipif(not _ZLIB_INSTALLED, reason="zlib not installed")
 def test_compression_zlib(pandas_dataframe):
     _test_compression(pandas_dataframe, 'zlib')
 
-@pytest.mark.skipif(
-    not _BLOSC_INSTALLED,
-    reason="blosc not installed",
-)
+@pytest.mark.skipif(not _BLOSC_INSTALLED, reason="blosc not installed")
 def test_compression_blosc(self):
     _test_compression('blosc')
 
@@ -107,7 +101,7 @@ def _test_compression_warns_when_decompress_caches(pandas_dataframe, compress):
             assert_frame_equal(value, expected)
             # make sure that we can write to the new frames even though
             # we needed to copy the data
-            for block in value._data.blocks:
+            for block in value._mgr.blocks:
                 if isinstance(block.values, np.ndarray):
                     assert block.values.flags.writeable
                     # mutate the data in some way
@@ -124,15 +118,13 @@ def _test_compression_warns_when_decompress_caches(pandas_dataframe, compress):
         # original buffers
         assert buf == control_buf
 
+@pytest.mark.skipif(not _ZLIB_INSTALLED, reason="zlib not installed")
 def test_compression_warns_when_decompress_caches_zlib(pandas_dataframe):
-    if not _ZLIB_INSTALLED:
-        pytest.skip('no zlib')
     _test_compression_warns_when_decompress_caches(pandas_dataframe, 'zlib')
 
+@pytest.mark.skipif(not _BLOSC_INSTALLED, reason="blosc not installed")
 def test_compression_warns_when_decompress_caches_blosc(pandas_dataframe):
-    if not _BLOSC_INSTALLED:
-        pytest.skip('no blosc')
-    _test_compression_warns_when_decompress_caches(pandas_datframe, 'blosc')
+    _test_compression_warns_when_decompress_caches(pandas_dataframe, 'blosc')
 
 def _test_small_strings_no_warn(compress):
     empty = np.array([], dtype='uint8')
@@ -160,20 +152,17 @@ def _test_small_strings_no_warn(compress):
         np.array([ord(b'b')], dtype='uint8'),
     )
 
+@pytest.mark.skipif(not _ZLIB_INSTALLED,reason="zlib not installed")
 def test_small_strings_no_warn_zlib():
-    if not _ZLIB_INSTALLED:
-        pytest.skip('no zlib')
     _test_small_strings_no_warn('zlib')
 
+@pytest.mark.skipif(not _BLOSC_INSTALLED, reason="blosc not installed")
 def test_small_strings_no_warn_blosc():
-    if not _BLOSC_INSTALLED:
-        pytest.skip('no blosc')
     _test_small_strings_no_warn('blosc')
 
+@pytest.mark.skipif(not _BLOSC_INSTALLED, reason="blosc not installed")
 def test_readonly_axis_blosc():
     # GH11880
-    if not _BLOSC_INSTALLED:
-        pytest.skip('no blosc')
     df1 = pd.DataFrame({'A': list('abcd')})
     df2 = pd.DataFrame(df1, index=[1., 2., 3., 4.])
     assert 1 in encode_decode(None, df1['A'], compress='blosc')
@@ -186,6 +175,8 @@ def test_readonly_axis_zlib():
     assert 1 in encode_decode(None, df1['A'], compress='zlib')
     assert 1. in encode_decode(None, df2['A'], compress='zlib')
 
+@pytest.mark.skipif(not _SQLALCHEMY_INSTALLED, reason="sqlalchemy not installed")
+@pytest.mark.skipif(not _BLOSC_INSTALLED, reason="blosc not installed")
 def test_readonly_axis_blosc_to_sql():
     # GH11880
     if not _BLOSC_INSTALLED:
