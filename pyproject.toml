@@ -1,5 +1,5 @@
 [project]
-name = "isf-pandas-msgpack-test"
+name = "isf-pandas-msgpack"
 description = "Pandas interface to msgpack - ISF patch"
 dynamic = ["version"]
 classifiers=[
@@ -14,9 +14,16 @@ classifiers=[
     'Programming Language :: Python :: 3.6',
     'Programming Language :: Python :: 3.7',
     'Programming Language :: Python :: 3.8',
+    'Programming Language :: Python :: 3.9',
+    'Programming Language :: Python :: 3.10',
+    'Programming Language :: Python :: 3.11',
     'Topic :: Scientific/Engineering',
 ]
 license = {file = 'LICENSE.md'}
+dependencies = [
+    "pandas>=1.1.0,<3",
+    "packaging>=24.2,<25",
+]
 
 [tool.pixi.project]
 channels = ["conda-forge"]
@@ -38,17 +45,16 @@ libc = "2.17"
 linux = "3.10.0"
 
 [tool.pixi.environments]
-default = ['run']
-build = ['run', 'build']
-test = ['run', 'test']
-test-pandas-v11 = ['pandas-v11', "test", 'build']
-test-pandas-v12 = ['pandas-v12', "test", 'build']
-test-pandas-v13 = ['pandas-v13', "test", 'build']
-test-pandas-v14 = ['pandas-v14', "test", 'build']
-test-pandas-v15 = ['pandas-v15', "test", 'build']
-test-pandas-v20 = ['pandas-v20', "test", 'build']
-test-pandas-v21 = ['pandas-v21', "test", 'build']
-test-pandas-v22 = ['pandas-v22', "test", 'build']
+build = ['build']
+test = ['test']
+test-pandas-v11 = { features = ['pandas-v11', "test", 'build'], no-default-feature = true}
+test-pandas-v12 = { features = ['pandas-v12', "test", 'build'], no-default-feature = true}
+test-pandas-v13 = { features = ['pandas-v13', "test", 'build'], no-default-feature = true}
+test-pandas-v14 = { features = ['pandas-v14', "test", 'build'], no-default-feature = true}
+test-pandas-v15 = { features = ['pandas-v15', "test", 'build'], no-default-feature = true}
+test-pandas-v20 = { features = ['pandas-v20', "test", 'build'], no-default-feature = true}
+test-pandas-v21 = { features = ['pandas-v21', "test", 'build'], no-default-feature = true}
+test-pandas-v22 = { features = ["pandas-v22", "test", "build"], no-default-feature = true }
 
 # Build
 [tool.pixi.feature.build.dependencies]
@@ -78,8 +84,7 @@ test = { cmd = [
     "-v",
     ], description = "Run the tests" }
 
-[tool.pixi.feature.run.dependencies]
-pandas = ">=1.0.0,<2"
+
 
 [tool.pixi.feature.pandas-v11.dependencies]
 pandas = ">=1.1.0,<1.2"
