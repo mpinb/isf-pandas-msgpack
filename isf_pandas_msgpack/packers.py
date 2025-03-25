@@ -93,28 +93,46 @@ except ImportError:
         )
     
 
-from pandas import (Timestamp, Period, Series, DataFrame,  # noqa
-                    Index, MultiIndex,
-                    RangeIndex, PeriodIndex, DatetimeIndex, NaT,
-                    Categorical, CategoricalIndex, CategoricalDtype)
+from pandas import (
+    Timestamp, 
+    Period, 
+    Series, 
+    DataFrame,  # noqa
+    Index, 
+    MultiIndex,
+    RangeIndex, 
+    PeriodIndex, 
+    DatetimeIndex, 
+    NaT,
+    Categorical, 
+    CategoricalIndex, 
+    CategoricalDtype
+)
 from pandas.core.arrays.sparse.array import BlockIndex, IntIndex
 from pandas.arrays import PeriodArray
 from pandas.core.generic import NDFrame
 from pandas.core.dtypes.generic import ABCSeries
 from pandas.errors import PerformanceWarning
 
-from .pandas_compat import get_filepath_or_buffer, Int64Index, Float64Index, SparseDtype
+from .pandas_compat import (
+    get_filepath_or_buffer, 
+    Int64Index, 
+    Float64Index, 
+    SparseDtype, 
+    PANDAS_GE_300, 
+    PANDAS_GE_210
+    )
 
 # from pandas_msgpack import _is_pandas_legacy_version
-from isf_pandas_msgpack.msgpack import (Unpacker as _Unpacker,
-                                    Packer as _Packer,
-                                    ExtType)
+from isf_pandas_msgpack.msgpack import (
+    Unpacker as _Unpacker,
+    Packer as _Packer,
+    ExtType)
 from isf_pandas_msgpack._move import (
     BadMove as _BadMove,
     move_into_mutable_buffer as _move_into_mutable_buffer,
 )
 
-# _safe_reshape got removed from later version of pandas. (Omar, 31.08.2023)
 from pandas.core.dtypes.common import (
     is_extension_array_dtype
 )
@@ -441,7 +459,8 @@ def unconvert(values, dtype, compress=None):
     
     # Convert to PeriodArray if dtype is PeriodDtype
     if isinstance(original_dtype, PeriodDtype):
-        array = PeriodArray(array, freq=original_dtype.freq)
+        # array = PeriodArray(array, freq=original_dtype.freq)
+        array = PeriodArray(array, dtype=original_dtype)
         
     return array
 
@@ -537,7 +556,9 @@ def encode(obj):
         #                     for name, ss in compat.iteritems(obj)])
         #     return d
         # else:
-        data = obj._data
+
+        # # The private _data attribute will be deprecated in the future. here, we use the BlockManager _mgr instead - Bjorge 2025-03-25
+        data = obj._mgr
         if not data.is_consolidated():
             data = data.consolidate()
 
@@ -545,12 +566,15 @@ def encode(obj):
         return {u'typ': u'block_manager',
                 u'klass': u(obj.__class__.__name__),
                 u'axes': data.axes,
-                u'blocks': [{u'locs': b.mgr_locs.as_array,
-                            u'values': convert(b.values),
-                            u'shape': b.values.shape,
-                            u'dtype': u(b.dtype.name),
-                            u'klass': u(b.__class__.__name__),
-                            u'compress': compressor} for b in data.blocks]
+                u'blocks': [
+                    {
+                        u'locs': b.mgr_locs.as_array,
+                        u'values': convert(b.values),
+                        u'shape': b.values.shape,
+                        u'dtype': u(b.dtype.name),
+                        u'klass': u(b.__class__.__name__),
+                        u'compress': compressor} 
+                    for b in data.blocks]
                 }
 
     elif isinstance(obj, (datetime, date, np.datetime64, timedelta,
@@ -627,6 +651,44 @@ def encode(obj):
 
     return obj
 
+
+def create_block(b, axes):
+    from pandas.core.internals import make_block
+    import pandas.core.internals as internals
+    values = _safe_reshape(unconvert(
+        b[u'values'], dtype_for(b[u'dtype']),
+        b[u'compress']), b[u'shape'])
+
+    # locs handles duplicate column names, and should be used instead
+    # of items; see GH 9618
+    if u'locs' in b:
+        placement = b[u'locs']
+    else:
+        placement = axes[0].get_indexer(b[u'items'])
+
+    return make_block(
+        values=values,
+        klass=getattr(internals.blocks, b[u'klass']),
+        placement=placement,
+        dtype=b[u'dtype'])
+
+    
+def _decode_block_manager(obj):
+    axes = obj[u'axes']
+    # if PANDAS_GE_300:
+    #     from pandas.api.internals import create_dataframe_from_blocks
+    #     create_dataframe_from_blocks(
+    #         obj[u'blocks'], axes[1], axes[0]
+    #     )
+    # else:
+    from pandas.core.internals import BlockManager
+    blocks = [create_block(b=b, axes=axes) for b in obj[u'blocks']]
+    mgr = BlockManager(blocks, list(axes))
+    if PANDAS_GE_210:
+        return DataFrame._from_mgr(mgr, axes=axes)
+    else:
+        return DataFrame(BlockManager(blocks, list(axes))) 
+        
 
 def decode(obj):
     """
@@ -707,30 +769,7 @@ def decode(obj):
         return result
 
     elif typ == u'block_manager':
-        from pandas.core.internals import BlockManager, make_block
-        import pandas.core.internals as internals
-        axes = obj[u'axes']
-
-        def create_block(b):
-            values = _safe_reshape(unconvert(
-                b[u'values'], dtype_for(b[u'dtype']),
-                b[u'compress']), b[u'shape'])
-
-            # locs handles duplicate column names, and should be used instead
-            # of items; see GH 9618
-            if u'locs' in b:
-                placement = b[u'locs']
-            else:
-                placement = axes[0].get_indexer(b[u'items'])
-
-            return make_block(
-                values=values,
-                klass=getattr(internals.blocks, b[u'klass']),
-                placement=placement,
-                dtype=b[u'dtype'])
-    
-        blocks = [create_block(b) for b in obj[u'blocks']]
-        return globals()[obj[u'klass']](BlockManager(blocks, list(axes)))
+        return _decode_block_manager(obj)
     elif typ == u'datetime':
         return parse(obj[u'data'])
     elif typ == u'datetime64':

@@ -1,7 +1,14 @@
-import pandas
+import pandas as pd
 from packaging.version import Version
 
-if Version(pandas.__version__) < Version("1.2"):
+PANDAS_ST_200 = Version(pd.__version__).release < (2, 0, 0)
+PANDAS_ST_210 = Version(pd.__version__).release < (2, 1, 0)
+PANDAS_ST_120 = Version(pd.__version__).release < (1, 2, 0)
+PANDAS_GE_210 = Version(pd.__version__).release >= (2, 1, 0)
+PANDAS_GE_300 =  Version(pd.__version__).major >= 3
+
+if PANDAS_ST_120:
+    from pandas.core.internals import _safe_reshape
     from pandas.io.common import get_filepath_or_buffer as _get_filepath_or_buffer
     def get_filepath_or_buffer(*args, **kwargs):
         fpb, encoding, compression, _ = _get_filepath_or_buffer(*args, **kwargs)
@@ -12,11 +19,6 @@ else:
         io_args = _get_filepath_or_buffer(*args, **kwargs)
         fpb, encoding, compression = io_args.filepath_or_buffer, io_args.encoding, io_args.compression
         return fpb, encoding, compression
-
-        
-if Version(pandas.__version__) < Version("1.2"):
-    from pandas.core.internals import _safe_reshape
-else:
     def _safe_reshape(arr, new_shape):
         """
         If possible, reshape `arr` to have shape `new_shape`,
@@ -39,15 +41,16 @@ else:
             # TODO(EA2D): special case will be unnecessary with 2D EAs
             arr = np.asarray(arr).reshape(new_shape)
         return arr
+        
 
         
-if Version(pandas.__version__) < Version("2.0"):
+if PANDAS_ST_200:
     from pandas import Int64Index, Float64Index
 else:
     Int64Index = None
     Float64Index = None
 
-if Version(pandas.__version__) < Version("2.1"):
+if PANDAS_ST_210:
     from pandas.core.arrays.sparse import SparseDtype
 else:
     from pandas import SparseDtype
