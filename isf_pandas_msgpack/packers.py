@@ -588,6 +588,27 @@ def encode(obj):
 
 
 def _create_block(b, axes):
+    """Create a pandas block from the given block dictionary.
+    
+    This is used to reconstruct blocks from the serialized data.
+    The block dictionary should contain the following keys:
+    
+    - klass: The class name of the block. 
+        For newer pandas versions, this should just be "Block". 
+        Older pandas versions had more granular classes (e.g., "FloatBlock", "IntBlock").
+    - values: The values of the block, which will be reshaped to the specified shape.
+    - shape: The shape of the block.
+    - dtype: The data type of the block.
+    - compress: A flag indicating whether the values are compressed.
+    - locs: The locations of the block in the DataFrame.
+
+    Args:
+        b: The block dictionary containing the binary block data.
+        axes: The axes of the DataFrame.
+
+    Returns:
+        A pandas Block object.
+    """
     from pandas.core.internals import make_block
     import pandas.core.internals as internals
     
@@ -620,7 +641,23 @@ def _create_block(b, axes):
 
     
 def _construct_df_from_blocks(obj):
+    """Construct a dataframe from the serialized msgpack object.
+    
+    Serialized msgpack objects are structured in blocks.
+    Pandas has verion-dependent API to recreate a dataframe from these blocks, depending on their
+    locations, dtypes etc.
+    
+    This is a convenience function to re-reacte the dataframe from the blocks.
+    It *should* work for all pandas versions at the time of testing: 1.1, 1.2, 1.3, 1.4, 1.5, 2.0, 2.1, 2.2
+    
+    Args:
+        obj: The serialized msgpack object containing the blocks.
+    
+    Returns:
+        A pandas DataFrame object.   
+    """
     axes = obj[u'axes']
+
     # if PANDAS_GE_300:
     #     from pandas.api.internals import create_dataframe_from_blocks
     #     create_dataframe_from_blocks(
