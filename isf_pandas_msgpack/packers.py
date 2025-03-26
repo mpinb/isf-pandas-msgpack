@@ -649,7 +649,8 @@ def decode(obj):
         dtype = dtype_for(obj[u'dtype'])
         data = unconvert(obj[u'data'], dtype,
                          obj.get(u'compress'))
-        return globals()[obj[u'klass']](data, dtype=dtype, name=obj[u'name'])
+        # return globals()[obj[u'klass']](data, dtype=dtype, name=obj[u'name'])
+        return Index(data, dtype=dtype, name=obj[u'name'])
     elif typ == u'range_index':
         return globals()[obj[u'klass']](
             obj[u'start'],
