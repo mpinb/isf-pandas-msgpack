@@ -590,6 +590,17 @@ def encode(obj):
 def _create_block(b, axes):
     from pandas.core.internals import make_block
     import pandas.core.internals as internals
+    
+    # Dynamically resolve the block class
+    # Old pandas versions had granular block types (e.g. "FloatBlock", "IntBlock" ...)
+    # Newer pandas version infer the dtype from ... well, the dtype. - Bjorge 2025-03-26
+    block_class_name = b[u'klass']
+    block_class = getattr(internals.blocks, block_class_name, None)
+    # For newer pandas versions, fallback to a generic block if the specific class doesn't exist
+    if block_class is None:
+        from pandas.core.internals.blocks import new_block
+        block_class = new_block
+        
     values = _safe_reshape(unconvert(
         b[u'values'], dtype_for(b[u'dtype']),
         b[u'compress']), b[u'shape'])
@@ -603,7 +614,7 @@ def _create_block(b, axes):
 
     return make_block(
         values=values,
-        klass=getattr(internals.blocks, b[u'klass']),
+        klass=block_class,
         placement=placement,
         dtype=b[u'dtype'])
 
