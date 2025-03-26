@@ -707,7 +707,7 @@ def decode(obj):
         return result
 
     elif typ == u'block_manager':
-        return _decode_block_manager(obj)
+        return _construct_df_from_blocks(obj)
     elif typ == u'datetime':
         return parse(obj[u'data'])
     elif typ == u'datetime64':
