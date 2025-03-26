@@ -48,7 +48,7 @@ else:
         
 
         
-if PANDAS_ST_200:
+if PANDAS_ST_120:
     from pandas import Int64Index, Float64Index
 else:
     Int64Index = None
