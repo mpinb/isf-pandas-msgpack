@@ -20,6 +20,7 @@ classifiers=[
     'Topic :: Scientific/Engineering',
 ]
 license = {file = 'LICENSE.md'}
+readme = "README.md"
 dependencies = [
     "pandas>=1.1.0,<3",
     "packaging>=24.2,<25",
