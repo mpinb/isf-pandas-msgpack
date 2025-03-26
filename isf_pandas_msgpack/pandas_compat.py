@@ -45,14 +45,6 @@ else:
             # TODO(EA2D): special case will be unnecessary with 2D EAs
             arr = np.asarray(arr).reshape(new_shape)
         return arr
-        
-
-        
-if PANDAS_ST_120:
-    from pandas import Int64Index, Float64Index
-else:
-    Int64Index = None
-    Float64Index = None
 
 if PANDAS_ST_210:
     from pandas.core.arrays.sparse import SparseDtype

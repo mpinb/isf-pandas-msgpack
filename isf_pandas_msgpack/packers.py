@@ -80,8 +80,6 @@ from pandas.core.dtypes.common import is_extension_array_dtype
 from pandas.errors import PerformanceWarning
 from .pandas_compat import (
     get_filepath_or_buffer, 
-    Int64Index, 
-    Float64Index, 
     SparseDtype, 
     PANDAS_GE_300, 
     PANDAS_GE_210,
@@ -610,7 +608,7 @@ def _create_block(b, axes):
         dtype=b[u'dtype'])
 
     
-def _decode_block_manager(obj):
+def _construct_df_from_blocks(obj):
     axes = obj[u'axes']
     # if PANDAS_GE_300:
     #     from pandas.api.internals import create_dataframe_from_blocks
