@@ -23,7 +23,7 @@ license = {file = 'LICENSE.md'}
 readme = "README.md"
 dependencies = [
     "pandas>=1.1.0,<3",
-    "packaging>=24.2,<25",
+    "packaging>=24.2,<26",
 ]
 
 [tool.pixi.project]
@@ -55,7 +55,7 @@ test-pandas-v14 = { features = ['pandas-v14', "test", 'build'], no-default-featu
 test-pandas-v15 = { features = ['pandas-v15', "test", 'build'], no-default-feature = true}
 test-pandas-v20 = { features = ['pandas-v20', "test", 'build'], no-default-feature = true}
 test-pandas-v21 = { features = ['pandas-v21', "test", 'build'], no-default-feature = true}
-test-pandas-v22 = { features = ["pandas-v22", "test", "build"], no-default-feature = true }
+test-pandas-v22 = { features = ["pandas-v22", "test", "build"], no-default-feature = true}
 
 # Build
 [tool.pixi.feature.build.dependencies]
