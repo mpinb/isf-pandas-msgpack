@@ -74,6 +74,9 @@ build_ext = { cmd = [
 build = { cmd = [
     "python", "-m", "build", "--sdist"
     ], description = "Build the package" }
+upload = { cmd = [
+    "twine", "upload", "--skip-existing", "--repository", "pypi", "dist/*"
+    ], description = "Upload the package to PyPI" }
 
 # Test
 [tool.pixi.feature.test.dependencies]
@@ -84,8 +87,6 @@ test = { cmd = [
     "pytest", 
     "-v",
     ], description = "Run the tests" }
-
-
 
 [tool.pixi.feature.pandas-v11.dependencies]
 pandas = ">=1.1.0,<1.2"
