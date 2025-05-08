@@ -1,4 +1,8 @@
-*   Tag commit
+*   Build the source distribution locally
+    
+        pixi r build
+
+*   Tag commit the result with a version number
 
         git tag -a x.x.x -m 'Version x.x.x'
 
@@ -17,5 +21,4 @@
 *  Upload to PyPI
 
         rm -rf dist/
-        pixi r build
-        twine upload dist/*
+        pixi r upload
