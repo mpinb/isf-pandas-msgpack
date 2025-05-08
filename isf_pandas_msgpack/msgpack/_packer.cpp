@@ -18,7 +18,7 @@
         ],
         "include_dirs": [
             "isf_pandas_msgpack/msgpack",
-            "pandas_msgack/includes"
+            "isf_pandas_msgack/includes"
         ],
         "language": "c++",
         "name": "isf_pandas_msgpack.msgpack._packer",
