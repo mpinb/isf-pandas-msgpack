@@ -42,7 +42,7 @@ packer_ext = Extension('isf_pandas_msgpack.msgpack._packer',
                                  'isf_pandas_msgpack/includes/pack_template.h'],
                         sources = ['isf_pandas_msgpack/msgpack/_packer.pyx'],
                         language='c++',
-                        include_dirs=['pandas_msgack/includes'],
+                        include_dirs=['isf_pandas_msgack/includes'],
                         define_macros=macros,
                         extra_compile_args=extra_compile_args)
 unpacker_ext = Extension('isf_pandas_msgpack.msgpack._unpacker',
