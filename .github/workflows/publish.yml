@@ -106,4 +106,4 @@ jobs:
           TWINE_USERNAME: __token__
           TWINE_PASSWORD: ${{ secrets.TESTPYPI_API_TOKEN }}
         run: |
-          pixi r test_upload
+          pixi r -e build test_upload
