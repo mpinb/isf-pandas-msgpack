@@ -45,7 +45,7 @@ where = ["src"]
 "isf_pandas_msgpack" = ["*.h", "*.pxd", "*.pyx", "*.c", "*.cpp"]
 
 [tool.setuptools_scm]
-version_file = "src/_version.py"
+version_file = "src/isf_pandas_msgpack/_version.py"
 
 [tool.pixi.system-requirements]
 libc = "2.17"
@@ -78,7 +78,7 @@ build_ext = { cmd = [
     "python", "setup.py", "build_ext", "--inplace"
     ], description = "Build the Cython extensions" }
 build = { cmd = [
-    "python", "-m", "build", "--sdist"
+    "python", "-m", "build", "--sdist", "--wheel"
     ], description = "Build the package" }
 upload = { cmd = [
     "twine", "upload", "--skip-existing", "--repository", "pypi", "dist/*"
