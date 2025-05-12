@@ -1,0 +1,47 @@
+name: CI
+
+on:
+  push:
+    branches: ["main"]
+  pull_request:
+    branches: ["main"]
+  workflow_dispatch:
+
+jobs:
+  build-and-test:
+    name: Build & Test on ${{ matrix.os }} / Python ${{ matrix.python-version }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+        python-version: ["3.8", "3.11"]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Install build dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install cython setuptools setuptools-scm build
+
+      - name: Build the package
+        run: |
+          python -m build --sdist --wheel
+
+      - name: Install the package
+        run: |
+          pip install dist/*.whl
+
+      - name: Install test dependencies
+        run: |
+          pip install pytest pandas blosc
+
+      - name: Run tests
+        run: |
+          pytest -v isf_pandas_msgpack/tests
