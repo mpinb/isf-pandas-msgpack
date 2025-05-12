@@ -8,22 +8,25 @@ on:
   workflow_dispatch:
 
 jobs:
-  build-and-test:
-    name: Build & Test on ${{ matrix.os }} / Python ${{ matrix.python-version }}
+  build:
+    name: Build on ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
       matrix:
         os: [ubuntu-latest, windows-latest, macos-latest]
-        python-version: ["3.4", "3.11"]
-
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-      - name: Set up Python
-        uses: actions/setup-python@v5
+      - name: Set up pixi environments
+        uses: prefix-dev/setup-pixi@v0.8.8
         with:
-          python-version: ${{ matrix.python-version }}
+          pixi-version: v0.46.0
+          cache: true
+          auth-host: prefix.dev
+          auth-token: ${{ secrets.PREFIX_DEV_TOKEN }}
+          manifest-path: pyproject.toml
 
       - name: Install build dependencies
         run: |
@@ -33,18 +36,17 @@ jobs:
       - name: Build the package
         run: |
           python -m build --sdist --wheel
-
+      
       - name: Install the package
         run: |
           python -c "import glob; import subprocess; subprocess.check_call(['pip', 'install', glob.glob('dist/*.whl')[0]])"
 
-      - name: Verify module import
-        run: python -c "import isf_pandas_msgpack; print(isf_pandas_msgpack.__version__)"
-
-      - name: Install test dependencies
+      - name: Run tests for `pandas 1.1` to `pandas 2.2`
         run: |
-          pip install pytest pandas blosc
-
-      - name: Run tests
-        run: |
-          pytest -v tests
+          pixi r -e test-pandas-11 test
+          pixi r -e test-pandas-12 test
+          pixi r -e test-pandas-13 test
+          pixi r -e test-pandas-14 test
+          pixi r -e test-pandas-20 test
+          pixi r -e test-pandas-21 test
+          pixi r -e test-pandas-22 test
