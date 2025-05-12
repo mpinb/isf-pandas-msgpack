@@ -43,10 +43,10 @@ jobs:
 
       - name: Run tests for `pandas 1.1` to `pandas 2.2`
         run: |
-          pixi r -e test-pandas-11 test
-          pixi r -e test-pandas-12 test
-          pixi r -e test-pandas-13 test
-          pixi r -e test-pandas-14 test
-          pixi r -e test-pandas-20 test
-          pixi r -e test-pandas-21 test
-          pixi r -e test-pandas-22 test
+          pixi r -e test-pandas-v11 test
+          pixi r -e test-pandas-v12 test
+          pixi r -e test-pandas-v13 test
+          pixi r -e test-pandas-v14 test
+          pixi r -e test-pandas-v20 test
+          pixi r -e test-pandas-v21 test
+          pixi r -e test-pandas-v22 test
