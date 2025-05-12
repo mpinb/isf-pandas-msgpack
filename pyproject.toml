@@ -32,11 +32,22 @@ platforms = ["linux-64", "osx-arm64", "osx-64", "linux-aarch64", "win-64"]
 
 [build-system]
 build-backend = "setuptools.build_meta"
-requires = ["setuptools>=64", "Cython", "setuptools-scm>=8"]
+requires = ["setuptools>=74.1", "Cython", "setuptools-scm>=8"]
 
 [dependency-groups]
 build = ["build>=1.2.2.post1,<2"]
 test = ["blosc>=1.11.2,<2"]
+
+[tool.setuptools]
+packages = ["isf_pandas_msgpack", "isf_pandas_msgpack.includes", "isf_pandas_msgpack.msgpack", "isf_pandas_msgpack.tests"]
+ext-modules = [
+    { name = "isf_pandas_msgpack.msgpack._packer", sources = ["isf_pandas_msgpack/msgpack/_packer.pyx"], language = "c++", include-dirs = ["isf_pandas_msgpack/includes"], extra-compile-args = ["-Wno-unused-function", "-std=c++11"] },
+    { name = "isf_pandas_msgpack.msgpack._unpacker", sources = ["isf_pandas_msgpack/msgpack/_unpacker.pyx"], language = "c++", include-dirs = ["isf_pandas_msgpack/includes"], extra-compile-args = ["-Wno-unused-function", "-std=c++11"] },
+    { name = "isf_pandas_msgpack._move", sources = ["isf_pandas_msgpack/move.c"] }
+]
+
+[tool.setuptools.package-data]
+"*" = ["*.h", "*.pxd", "*.pyx", "*.c", "*.cpp"]
 
 [tool.setuptools_scm]
 version_file = "isf_pandas_msgpack/_version.py"
