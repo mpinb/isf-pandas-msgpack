@@ -32,6 +32,7 @@ jobs:
           VERSION=${{ github.event.release.tag_name }}
           echo "VERSION=$VERSION"
           echo "VERSION=$VERSION" >> $GITHUB_ENV
+        shell: bash
 
       - name: Build the package with version from Git tag
         env:
@@ -72,6 +73,7 @@ jobs:
           cp dist/linux/* dist/all/
           cp dist/macos/* dist/all/
           cp dist/windows/* dist/all/
+        shell: bash
 
       - name: Publish to PyPI
         env:
