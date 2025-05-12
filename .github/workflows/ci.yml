@@ -47,6 +47,4 @@ jobs:
 
       - name: Run tests
         run: |
-          mkdir empty
-          cd empty
-          pytest -v isf_pandas_msgpack/tests
+          pytest -v tests

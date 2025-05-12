@@ -3,7 +3,7 @@
 from collections import namedtuple
 
 from isf_pandas_msgpack.msgpack.exceptions import *  # noqa
-from isf_pandas_msgpack.msgpack._version import version
+from isf_pandas_msgpack._version import version
 # import pyximport
 # pyximport.install()
 
