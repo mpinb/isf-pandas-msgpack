@@ -84,6 +84,9 @@ build = { cmd = [
 upload = { cmd = [
     "twine", "upload", "--skip-existing", "--repository", "pypi", "dist/*"
     ], description = "Upload the package to PyPI" }
+test_upload = { cmd = [
+    "twine", "upload", "--skip-existing", "--repository", "testpypi", "dist/*"
+    ], description = "Upload the package to TestPyPI" }
 
 # Test
 [tool.pixi.feature.test.dependencies]
