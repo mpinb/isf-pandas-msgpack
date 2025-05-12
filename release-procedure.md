@@ -1,7 +1,3 @@
-*   Build the source distribution locally
-    
-        pixi r build
-
 *   Tag commit the result with a version number
 
         git tag -a x.x.x -m 'Version x.x.x'
@@ -12,13 +8,16 @@
 
 *  Verify the version number is correct
 
-        pixi r get_version
+        pixi r -e build get_version
         0.1.22
 
         # if it contains .dev, you can always override before building with:
         export SETUPTOOLS_SCM_PRETEND_VERSION=0.1.21
 
+*   Build the source distribution locally
+    
+        pixi r -e build build
+
 *  Upload to PyPI
 
-        rm -rf dist/
-        pixi r upload
+        pixi r -e build upload
