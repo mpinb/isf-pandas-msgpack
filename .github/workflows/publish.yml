@@ -5,7 +5,7 @@ on:
     types: [published]
 
 jobs:
-  publish:
+  build:
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
@@ -47,7 +47,7 @@ jobs:
           path: dist/*
 
   upload-to-pypi:
-    needs: publish
+    needs: build
     runs-on: ubuntu-latest
 
     steps:
