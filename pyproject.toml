@@ -20,7 +20,7 @@ classifiers=[
     'Topic :: Scientific/Engineering',
 ]
 license = "BSD-3-Clause"
-license-files = ['LICENSE.md']
+license-files = ['LICENSE.rst']
 readme = "README.md"
 dependencies = [
     "pandas>=1.1.0,<3",
