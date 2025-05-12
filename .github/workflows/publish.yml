@@ -6,6 +6,7 @@ on:
 
 jobs:
   build:
+    name: Build and save artifacts
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
@@ -45,12 +46,35 @@ jobs:
           name: dist-${{ matrix.os }}
           path: dist/*
 
+      - name: Upload env artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: env
+          path: |
+            pyproject.toml
+            pixi.lock
+
   upload-to-pypi:
+    name: Upload source distribution and wheels to PyPI
     needs: build
     runs-on: ubuntu-latest
 
     steps:
-      - name: Download artifacts
+      - name: Set up environment
+        uses: prefix-dev/setup-pixi@v0.8.8
+        with:
+          pixi-version: v0.46.0
+          cache: true
+          auth-host: prefix.dev
+          auth-token: ${{ secrets.PREFIX_DEV_TOKEN }}
+          manifest-path: pyproject.toml
+      
+      - name: Download env artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: env
+
+      - name: Download artifacts (Linux)
         uses: actions/download-artifact@v4
         with:
           name: dist-ubuntu-latest
@@ -75,15 +99,6 @@ jobs:
           cp dist/macos/* dist/all/
           cp dist/windows/* dist/all/
         shell: bash
-
-      - name: Set up environment
-        uses: prefix-dev/setup-pixi@v0.8.8
-        with:
-          pixi-version: v0.46.0
-          cache: true
-          auth-host: prefix.dev
-          auth-token: ${{ secrets.PREFIX_DEV_TOKEN }}
-          manifest-path: pyproject.toml
 
       - name: Publish to PyPI
         env:
