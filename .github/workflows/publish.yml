@@ -61,6 +61,11 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      - name: Download env artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: env
+
       - name: Set up environment
         uses: prefix-dev/setup-pixi@v0.8.8
         with:
@@ -70,11 +75,6 @@ jobs:
           auth-token: ${{ secrets.PREFIX_DEV_TOKEN }}
           manifest-path: pyproject.toml
       
-      - name: Download env artifacts
-        uses: actions/download-artifact@v4
-        with:
-          name: env
-
       - name: Download artifacts (Linux)
         uses: actions/download-artifact@v4
         with:
