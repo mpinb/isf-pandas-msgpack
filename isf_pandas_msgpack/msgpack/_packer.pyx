@@ -2,17 +2,12 @@
 #cython: embedsignature=True
 
 from cpython cimport *
-from cpython.version cimport PY_MAJOR_VERSION
 from libc.stdlib cimport *
 from libc.string cimport *
 from libc.limits cimport *
 
 from .exceptions import PackValueError
 from . import ExtType
-
-cdef extern from "Python.h":
-    # Only available in Python 2:
-    cdef int PyInt_Check(object o)
 
 cdef extern from "../includes/pack.h":
     struct msgpack_packer:
@@ -142,11 +137,6 @@ cdef class Packer(object):
                     ret = msgpack_pack_true(&self.pk)
                 else:
                     ret = msgpack_pack_false(&self.pk)
-            if PY_MAJOR_VERSION < 3:
-                if PyInt_Check(o):
-                    # Only works on Py2.
-                    longval = o
-                    ret = msgpack_pack_long(&self.pk, longval)
             elif PyLong_Check(o):
                 if o > 0:
                     ullval = o
