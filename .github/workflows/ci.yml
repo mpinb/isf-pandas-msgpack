@@ -38,10 +38,15 @@ jobs:
         run: |
           pip install dist/*.whl
 
+      - name: Verify module import
+        run: python -c "import isf_pandas_msgpack; print(isf_pandas_msgpack.__version__)"
+
       - name: Install test dependencies
         run: |
           pip install pytest pandas blosc
 
       - name: Run tests
         run: |
+          mkdir empty
+          cd empty
           pytest -v isf_pandas_msgpack/tests
