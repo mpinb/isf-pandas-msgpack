@@ -40,7 +40,7 @@ jobs:
           python -m build --sdist --wheel
 
       - name: Upload artifacts
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: dist-${{ matrix.os }}
           path: dist/*
@@ -51,17 +51,17 @@ jobs:
 
     steps:
       - name: Download artifacts
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: dist-ubuntu-latest
           path: dist/linux
       - name: Download artifacts (macOS)
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: dist-macos-latest
           path: dist/macos
       - name: Download artifacts (Windows)
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: dist-windows-latest
           path: dist/windows
