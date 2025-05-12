@@ -33,7 +33,7 @@ platforms = ["linux-64", "osx-arm64", "osx-64", "linux-aarch64", "win-64"]
 
 [build-system]
 build-backend = "setuptools.build_meta"
-requires = ["setuptools>=77", "Cython", "setuptools-scm>=8"]
+requires = ["setuptools>=74.1", "Cython", "setuptools-scm>=8"]
 
 [dependency-groups]
 build = ["build>=1.2.2.post1,<2"]
