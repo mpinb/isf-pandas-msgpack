@@ -48,6 +48,7 @@ jobs:
 
       - name: Upload env artifacts
         uses: actions/upload-artifact@v4
+        if: ${{ runner.os == 'Linux' }}
         with:
           name: env
           path: |
