@@ -80,14 +80,12 @@ build-python-314 = { features = ["py314", "build"]}
 #     platforms you can build it on
 # not platforms you can build it for
 platforms = ['linux-64', 'osx-arm64', 'osx-64', 'win-64']
-dependencies = [
-    "cython>=3.0.12,<4",
-    "twine>=6.1.0,<7",
-    "hatch>=1.14.0,<2",
-    "pip>=25.0.1,<26",
-    "setuptools_scm>=8.2.1,<9",
-
-]
+[tool.pixi.feature.build.dependencies]
+cython = ">=3.0.12,<4"
+twine = ">=6.1.0,<7"
+hatch = ">=1.14.0,<2"
+pip = ">=25.0.1,<26"
+setuptools_scm = ">=8.2.1,<9"
 
 [tool.pixi.feature.build.tasks]
 get_version = { cmd = [
