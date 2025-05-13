@@ -51,7 +51,7 @@ jobs:
       - name: Upload env artifacts
         uses: actions/upload-artifact@v4
         # only upload on a single runner. it's the same on every runner anyways
-        if: ${{ runner.os == 'Linux' }} && ${{ matrix.python_version == 38 }}
+        if: ${{ runner.os == 'Linux' &&  matrix.python_version == 38 }}
         with:
           name: env
           path: |
