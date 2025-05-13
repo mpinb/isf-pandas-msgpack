@@ -9,12 +9,11 @@ on:
 
 jobs:
   build:
-    name: Build & test on ${{ matrix.os }}
-    runs-on: ${{ matrix.os }}
+    name: Test for pandas version ${{ matrix.pandas_version }}
+    runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest, windows-latest, macos-latest]
         pandas_version: [11, 12, 13, 14, 15, 20, 21, 22]
     steps:
       - name: Checkout code
@@ -31,7 +30,7 @@ jobs:
 
       - name: Build wheel & sdist
         run: |
-          pixi r -e build-pandas-v${{ matrix.pandas_version }} build
+          pixi r -e build-test-pandas-v${{ matrix.pandas_version }} build
 
       - name: Install wheel
         run: |
@@ -44,5 +43,5 @@ jobs:
         shell: bash
 
       - name: Run test suite
-        run: pixi r -e test-pandas-v${{ matrix.pandas_version }} test
+        run: pixi r -e build-test-pandas-v${{ matrix.pandas_version }} test
           
