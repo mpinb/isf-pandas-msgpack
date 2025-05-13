@@ -93,6 +93,8 @@ hatch = ">=1.13.0,<2"
 twine = ">=5.1.1,<7"
 setuptools_scm = ">=8.1.0,<9"
 cython = ">=3.0.11,<4"
+[tool.pixi.feature.build.pypi-dependencies]
+build = ">=1.2.2.post1,<2"
 
 [tool.pixi.feature.test.dependencies]
 pytest = "*"
