@@ -9,7 +9,7 @@ on:
 
 jobs:
   build:
-    name: Build and save artifacts
+    name: Build `isf_pandas_msgpack` for Python ${{ matrix.python_version }} on ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
@@ -30,7 +30,7 @@ jobs:
           auth-token: ${{ secrets.PREFIX_DEV_TOKEN }}
           manifest-path: pyproject.toml
 
-      - name: Build wheel & sdist with Git tag version
+      - name: Build wheel & sdist
         env:
           SETUPTOOLS_SCM_PRETEND_VERSION: ${{ env.VERSION }}
         run: |

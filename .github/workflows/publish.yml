@@ -40,11 +40,12 @@ jobs:
           SETUPTOOLS_SCM_PRETEND_VERSION: ${{ env.VERSION }}
         run: |
           pixi r -e build-python-${{ matrix.python_version }} build
+        shell: bash
 
       - name: Upload build artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: dist_${{ matrix.python_version }}
+          name: dist_${{ matrix.os }}_${{ matrix.python_version }}
           path: dist/${{ matrix.os }}/*
 
       - name: Upload env artifacts
