@@ -12,6 +12,7 @@ jobs:
       fail-fast: false
       matrix:
         os: [ubuntu-latest, macos-latest, windows-latest]
+        python_version: [34, 35, 36, 37, 38, 39, 310, 311, 312, 313]
 
     steps:
       - name: Checkout code
@@ -34,17 +35,18 @@ jobs:
           echo "VERSION=$VERSION" >> $GITHUB_ENV
         shell: bash
 
-      - name: Build the package with version from Git tag
+      - name: Build wheel & sdist with Git tag version
         env:
           SETUPTOOLS_SCM_PRETEND_VERSION: ${{ env.VERSION }}
         run: |
-          pixi r -e build build
+          pixi r -e build-python-${{ matrix.python_version }} build
+        shell: bash
 
       - name: Upload build artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: dist-${{ matrix.os }}
-          path: dist/*
+          name: dist_${{ matrix.os }}_${{ matrix.python_version }}
+          path: dist/${{ matrix.os }}/*
 
       - name: Upload env artifacts
         uses: actions/upload-artifact@v4

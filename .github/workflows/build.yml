@@ -1,0 +1,38 @@
+name: Build
+
+on:
+  push:
+    branches: ["main"]
+  pull_request:
+    branches: ["main"]
+  workflow_dispatch:
+
+jobs:
+  build:
+    name: Build `isf_pandas_msgpack` for Python ${{ matrix.python_version }} on ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+        python_version: [38, 39, 310, 311, 312, 313]
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up pixi environments
+        uses: prefix-dev/setup-pixi@v0.8.8
+        with:
+          pixi-version: v0.46.0
+          cache: true
+          auth-host: prefix.dev
+          auth-token: ${{ secrets.PREFIX_DEV_TOKEN }}
+          manifest-path: pyproject.toml
+
+      - name: Build wheel & sdist
+        env:
+          SETUPTOOLS_SCM_PRETEND_VERSION: ${{ env.VERSION }}
+        run: |
+          pixi r -e build-python-${{ matrix.python_version }} build
+        shell: bash

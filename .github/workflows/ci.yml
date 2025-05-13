@@ -9,12 +9,12 @@ on:
 
 jobs:
   build:
-    name: Build & test on ${{ matrix.os }}
-    runs-on: ${{ matrix.os }}
+    name: Test for pandas version ${{ matrix.pandas_version }}
+    runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest, windows-latest, macos-latest]
+        pandas_version: [11, 12, 13, 14, 15, 20, 21, 22]
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -28,25 +28,20 @@ jobs:
           auth-token: ${{ secrets.PREFIX_DEV_TOKEN }}
           manifest-path: pyproject.toml
 
-      - name: Install build dependencies
+      - name: Build wheel & sdist
         run: |
-          python -m pip install --upgrade pip
-          pip install cython setuptools setuptools-scm build
+          pixi r -e build-test-pandas-v${{ matrix.pandas_version }} build
 
-      - name: Build the package
+      - name: Install wheel
         run: |
-          python -m build --sdist --wheel
-      
-      - name: Install the package
-        run: |
-          python -c "import glob; import subprocess; subprocess.check_call(['pip', 'install', glob.glob('dist/*.whl')[0]])"
+          wheel=$(realpath $(echo dist/*.whl))
 
-      - name: Run tests for `pandas 1.1` to `pandas 2.2`
-        run: |
-          pixi r -e test-pandas-v11 test
-          pixi r -e test-pandas-v12 test
-          pixi r -e test-pandas-v13 test
-          pixi r -e test-pandas-v14 test
-          pixi r -e test-pandas-v20 test
-          pixi r -e test-pandas-v21 test
-          pixi r -e test-pandas-v22 test
+          # Install in default env, since installing wheels as features is not yet supported
+          # This breaks the default env
+          # Last checked on pixi 0.46
+          pixi add --pypi "isf_pandas_msgpack @ file://$wheel"
+        shell: bash
+
+      - name: Run test suite
+        run: pixi r -e build-test-pandas-v${{ matrix.pandas_version }} test
+          
