@@ -45,12 +45,13 @@ jobs:
       - name: Upload build artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: dist_${{ matrix.os }}_${{ matrix.python_version }}
-          path: dist/${{ matrix.os }}/*
+          name: build_${{ matrix.os }}_${{ matrix.python_version }}
+          path: dist/*
 
       - name: Upload env artifacts
         uses: actions/upload-artifact@v4
-        if: ${{ runner.os == 'Linux' }}
+        # only upload on a single runner. it's the same on every runner anyways
+        if: ${{ runner.os == 'Linux' }} && ${{ matrix.python_version == 38 }}
         with:
           name: env
           path: |
@@ -77,31 +78,11 @@ jobs:
           auth-token: ${{ secrets.PREFIX_DEV_TOKEN }}
           manifest-path: pyproject.toml
       
-      - name: Download artifacts (Linux)
+      - name: Download build artifacts 
         uses: actions/download-artifact@v4
         with:
-          name: dist-ubuntu-latest
-          path: dist/linux
-
-      - name: Download artifacts (macOS)
-        uses: actions/download-artifact@v4
-        with:
-          name: dist-macos-latest
-          path: dist/macos
-
-      - name: Download artifacts (Windows)
-        uses: actions/download-artifact@v4
-        with:
-          name: dist-windows-latest
-          path: dist/windows
-
-      - name: Combine all wheels
-        run: |
-          mkdir -p dist/all
-          cp dist/linux/* dist/all/
-          cp dist/macos/* dist/all/
-          cp dist/windows/* dist/all/
-        shell: bash
+          name: build_*
+          path: dist/
 
       - name: Publish to PyPI
         env:
