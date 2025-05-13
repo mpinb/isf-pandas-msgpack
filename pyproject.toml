@@ -57,14 +57,14 @@ linux = "3.10.0"
 build = ['build']
 test = ['test']
 # Test envs inherit dependency constraints from build to ensure consistency during CI
-test-pandas-v11 = { features = ['pandas-v11', "test"], solve-group = "build"}
-test-pandas-v12 = { features = ['pandas-v12', "test"], solve-group = "build"}
-test-pandas-v13 = { features = ['pandas-v13', "test"], solve-group = "build"}
-test-pandas-v14 = { features = ['pandas-v14', "test"], solve-group = "build"}
-test-pandas-v15 = { features = ['pandas-v15', "test"], solve-group = "build"}
-test-pandas-v20 = { features = ['pandas-v20', "test"], solve-group = "build"}
-test-pandas-v21 = { features = ['pandas-v21', "test"], solve-group = "build"}
-test-pandas-v22 = { features = ["pandas-v22", "test"], solve-group = "build"}
+test-pandas-v11 = { features = ['pandas-v11', "test"], solve-group = "build-pandas-v11"}
+test-pandas-v12 = { features = ['pandas-v12', "test"], solve-group = "build-pandas-v12"}
+test-pandas-v13 = { features = ['pandas-v13', "test"], solve-group = "build-pandas-v13"}
+test-pandas-v14 = { features = ['pandas-v14', "test"], solve-group = "build-pandas-v14"}
+test-pandas-v15 = { features = ['pandas-v15', "test"], solve-group = "build-pandas-v15"}
+test-pandas-v20 = { features = ['pandas-v20', "test"], solve-group = "build-pandas-v20"}
+test-pandas-v21 = { features = ['pandas-v21', "test"], solve-group = "build-pandas-v21"}
+test-pandas-v22 = { features = ["pandas-v22", "test"], solve-group = "build-pandas-v22"}
 build-pandas-v11 = { features = ['pandas-v11', "build"]}
 build-pandas-v12 = { features = ['pandas-v12', "build"]}
 build-pandas-v13 = { features = ['pandas-v13', "build"]}
