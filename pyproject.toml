@@ -8,15 +8,12 @@ classifiers=[
     'Intended Audience :: Science/Research',
     'Operating System :: OS Independent',
     'Programming Language :: Python',
-    'Programming Language :: Python :: 3',
-    'Programming Language :: Python :: 3.4',
-    'Programming Language :: Python :: 3.5',
-    'Programming Language :: Python :: 3.6',
-    'Programming Language :: Python :: 3.7',
     'Programming Language :: Python :: 3.8',
     'Programming Language :: Python :: 3.9',
     'Programming Language :: Python :: 3.10',
     'Programming Language :: Python :: 3.11',
+    'Programming Language :: Python :: 3.12',
+    'Programming Language :: Python :: 3.13',
     'Topic :: Scientific/Engineering',
 ]
 license = "BSD-3-Clause"
@@ -26,6 +23,7 @@ dependencies = [
     "pandas>=1.1.0,<3",
     "packaging>=24.2,<26"
     ]
+requires-python = ">=3.6.1,<3.14"
 
 [tool.pixi.project]
 channels = ["conda-forge"]
@@ -34,10 +32,6 @@ platforms = ["linux-64", "osx-arm64", "osx-64", "linux-aarch64", "win-64"]
 [build-system]
 build-backend = "setuptools.build_meta"
 requires = ["setuptools>=74.1", "Cython", "setuptools-scm>=8"]
-
-[dependency-groups]
-build = ["build>=1.2.2.post1,<2"]
-test = ["blosc>=1.11.2,<2"]
 
 [tool.setuptools.packages.find]
 where = ["src"]
@@ -64,28 +58,18 @@ build-test-pandas-v15 = { features = ['pandas-v15', "test", "build"]}
 build-test-pandas-v20 = { features = ['pandas-v20', "test", "build"]}
 build-test-pandas-v21 = { features = ['pandas-v21', "test", "build"]}
 build-test-pandas-v22 = { features = ["pandas-v22", "test", "build"]}
-build-python-34 =  { features = ['py34',  "build"]}
-build-python-35 =  { features = ['py35',  "build"]}
-build-python-36 =  { features = ['py36',  "build"]}
-build-python-37 =  { features = ['py37',  "build"]}
 build-python-38 =  { features = ['py38',  "build"]}
 build-python-39 =  { features = ['py39',  "build"]}
 build-python-310 = { features = ['py310', "build"]}
 build-python-311 = { features = ["py311", "build"]}
 build-python-312 = { features = ["py312", "build"]}
 build-python-313 = { features = ["py313", "build"]}
-build-python-314 = { features = ["py314", "build"]}
+# build-python-314 = { features = ["py314", "build"]}
 
 [tool.pixi.feature.build]
 #     platforms you can build it on
 # not platforms you can build it for
-platforms = ['linux-64', 'osx-arm64', 'osx-64', 'win-64']
-[tool.pixi.feature.build.dependencies]
-cython = ">=3.0.12,<4"
-twine = ">=6.1.0,<7"
-hatch = ">=1.14.0,<2"
-pip = ">=25.0.1,<26"
-setuptools_scm = ">=8.2.1,<9"
+platforms = ['linux-64']
 
 [tool.pixi.feature.build.tasks]
 get_version = { cmd = [
@@ -104,9 +88,17 @@ test_upload = { cmd = [
     "twine", "upload", "--skip-existing", "--repository", "testpypi", "dist/*"
     ], description = "Upload the package to TestPyPI" }
 
+[tool.pixi.feature.build.dependencies]
+hatch = ">=1.13.0,<2"
+twine = ">=5.1.1,<7"
+setuptools_scm = ">=8.1.0,<9"
+cython = ">=3.0.11,<4"
+
 [tool.pixi.feature.test.dependencies]
 pytest = "*"
 zlib = ">=1.3.1,<2"
+blosc = ">=1.11.2,<2"
+
 [tool.pixi.feature.test.tasks]
 test = { cmd = [
     "pytest", 
@@ -138,14 +130,6 @@ sqlalchemy = ">=2.0.39,<3"
 pandas = ">=2.2,<2.3"
 sqlalchemy = ">=2.0.39,<3"
 
-[tool.pixi.feature.py34.dependencies]
-python = ">=3.4,<3.5"
-[tool.pixi.feature.py35.dependencies]
-python = ">=3.5,<3.6"
-[tool.pixi.feature.py36.dependencies]
-python = ">=3.6,<3.7"
-[tool.pixi.feature.py37.dependencies]
-python = ">=3.7,<3.8"
 [tool.pixi.feature.py38.dependencies]
 python = ">=3.8,<3.9"
 [tool.pixi.feature.py39.dependencies]
@@ -158,5 +142,5 @@ python = ">=3.11,<3.12"
 python = ">=3.12,<3.13"
 [tool.pixi.feature.py313.dependencies]
 python = ">=3.13,<3.14"
-[tool.pixi.feature.py314.dependencies]
-python = ">=3.14,<3.15"
+# [tool.pixi.feature.py314.dependencies]
+# python = ">=3.14,<3.15"
