@@ -82,8 +82,41 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           pattern: build_*
-          path: dist/
+          path: dist_zips/
 
+      - name: Extract build artifacts
+        run: |
+          # Create target directory
+          mkdir -p dist/
+          
+          # Extract all zips, ignoring duplicates
+          for zip in dist_zips/*/; do
+            echo "Extracting artifacts from $zip"
+            # Create a temporary directory for each zip
+            mkdir -p temp_extract/
+            cp -r "$zip"/* temp_extract/
+            
+            # Handle file conflicts by skipping existing files (first one wins)
+            for file in temp_extract/*; do
+              filename=$(basename "$file")
+              if [ ! -f "dist/$filename" ]; then
+                cp "$file" dist/
+              else
+                echo "Skipping duplicate file: $filename"
+              fi
+            done
+            
+            # Clean up temp directory
+            rm -rf temp_extract/
+          done
+          
+          # List extracted files
+          echo "Files in dist directory:"
+          ls -la dist/
+          
+          # Clean up zip directories
+          rm -rf dist_zips/
+        shell: bash
       - name: Publish to PyPI
         env:
           TWINE_USERNAME: __token__
