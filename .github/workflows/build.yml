@@ -42,7 +42,7 @@ jobs:
         env:
           SETUPTOOLS_SCM_PRETEND_VERSION: ${{ env.VERSION }}
         run: |
-          pixi r -e build-python${{ matrix.python_version }} build
+          pixi r -e build-python-${{ matrix.python_version }} build
 
       - name: Upload build artifacts
         uses: actions/upload-artifact@v4
