@@ -16,8 +16,7 @@ classifiers=[
     'Programming Language :: Python :: 3.13',
     'Topic :: Scientific/Engineering',
 ]
-license = { text = "BSD-3-Clause" }
-license-files = ['LICENSE.rst']
+license = { text = "BSD-3-Clause"}
 readme = "README.md"
 dependencies = [
     "pandas>=1.1.0,<3",
@@ -32,6 +31,9 @@ platforms = ["linux-64", "osx-arm64", "osx-64", "linux-aarch64", "win-64"]
 [build-system]
 build-backend = "setuptools.build_meta"
 requires = ["setuptools>=74.1", "Cython", "setuptools-scm>=8"]
+
+[tool.setuptools]
+license-files = ['LICENSE.rst']
 
 [tool.setuptools.packages.find]
 where = ["src"]
@@ -69,7 +71,16 @@ build-python-313 = { features = ["py313", "build"]}
 [tool.pixi.feature.build]
 #     platforms you can build it on
 # not platforms you can build it for
-platforms = ['linux-64']
+platforms = ['linux-64', 'osx-arm64', 'osx-64', 'linux-aarch64', 'win-64']
+
+[tool.pixi.feature.build.dependencies]
+hatch = ">=1.13.0,<2"
+twine = ">=5.1.1,<7"
+setuptools_scm = ">=8.1.0,<9"
+cython = ">=3.0.11,<4"
+
+[tool.pixi.feature.build.pypi-dependencies]
+build = ">=1.2.2.post1,<2"
 
 [tool.pixi.feature.build.tasks]
 get_version = { cmd = [
@@ -87,14 +98,6 @@ upload = { cmd = [
 test_upload = { cmd = [
     "twine", "upload", "--skip-existing", "--repository", "testpypi", "dist/*"
     ], description = "Upload the package to TestPyPI" }
-
-[tool.pixi.feature.build.dependencies]
-hatch = ">=1.13.0,<2"
-twine = ">=5.1.1,<7"
-setuptools_scm = ">=8.1.0,<9"
-cython = ">=3.0.11,<4"
-[tool.pixi.feature.build.pypi-dependencies]
-build = ">=1.2.2.post1,<2"
 
 [tool.pixi.feature.test.dependencies]
 pytest = "*"
