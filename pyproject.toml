@@ -16,7 +16,7 @@ classifiers=[
     'Programming Language :: Python :: 3.13',
     'Topic :: Scientific/Engineering',
 ]
-license = "BSD-3-Clause"
+license = { text = "BSD-3-Clause" }
 license-files = ['LICENSE.rst']
 readme = "README.md"
 dependencies = [
