@@ -39,7 +39,7 @@ jobs:
         env:
           SETUPTOOLS_SCM_PRETEND_VERSION: ${{ env.VERSION }}
         run: |
-          pixi r -e build_python_${{ matrix.python_version }} build
+          pixi r -e build-python-${{ matrix.python_version }} build
 
       - name: Upload build artifacts
         uses: actions/upload-artifact@v4
@@ -79,19 +79,19 @@ jobs:
       - name: Download artifacts (Linux)
         uses: actions/download-artifact@v4
         with:
-          name: dist_ubuntu-latest
+          name: dist-ubuntu-latest
           path: dist/linux
 
       - name: Download artifacts (macOS)
         uses: actions/download-artifact@v4
         with:
-          name: dist_macos-latest
+          name: dist-macos-latest
           path: dist/macos
 
       - name: Download artifacts (Windows)
         uses: actions/download-artifact@v4
         with:
-          name: dist_windows-latest
+          name: dist-windows-latest
           path: dist/windows
 
       - name: Combine all wheels

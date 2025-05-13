@@ -30,7 +30,7 @@ jobs:
 
       - name: Build wheel & sdist
         run: |
-          pixi r -e build_test_pandas_v${{ matrix.pandas_version }} build
+          pixi r -e build-test-pandas-v${{ matrix.pandas_version }} build
 
       - name: Install wheel
         run: |
@@ -43,5 +43,5 @@ jobs:
         shell: bash
 
       - name: Run test suite
-        run: pixi r -e build_test_pandas_v${{ matrix.pandas_version }} test
+        run: pixi r -e build-test-pandas-v${{ matrix.pandas_version }} test
           
