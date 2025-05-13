@@ -24,8 +24,8 @@ license-files = ['LICENSE.rst']
 readme = "README.md"
 dependencies = [
     "pandas>=1.1.0,<3",
-    "packaging>=24.2,<26",
-]
+    "packaging>=24.2,<26"
+    ]
 
 [tool.pixi.project]
 channels = ["conda-forge"]
@@ -38,7 +38,6 @@ requires = ["setuptools>=74.1", "Cython", "setuptools-scm>=8"]
 [dependency-groups]
 build = ["build>=1.2.2.post1,<2"]
 test = ["blosc>=1.11.2,<2"]
-
 
 [tool.setuptools.packages.find]
 where = ["src"]
@@ -57,22 +56,34 @@ linux = "3.10.0"
 [tool.pixi.environments]
 build = ['build']
 test = ['test']
-test-pandas-v11 = { features = ['pandas-v11', "test", 'build'], no-default-feature = true}
-test-pandas-v12 = { features = ['pandas-v12', "test", 'build'], no-default-feature = true}
-test-pandas-v13 = { features = ['pandas-v13', "test", 'build'], no-default-feature = true}
-test-pandas-v14 = { features = ['pandas-v14', "test", 'build'], no-default-feature = true}
-test-pandas-v15 = { features = ['pandas-v15', "test", 'build'], no-default-feature = true}
-test-pandas-v20 = { features = ['pandas-v20', "test", 'build'], no-default-feature = true}
-test-pandas-v21 = { features = ['pandas-v21', "test", 'build'], no-default-feature = true}
-test-pandas-v22 = { features = ["pandas-v22", "test", "build"], no-default-feature = true}
+test-pandas-v11 = { features = ['pandas-v11', "test"]}
+test-pandas-v12 = { features = ['pandas-v12', "test"]}
+test-pandas-v13 = { features = ['pandas-v13', "test"]}
+test-pandas-v14 = { features = ['pandas-v14', "test"]}
+test-pandas-v15 = { features = ['pandas-v15', "test"]}
+test-pandas-v20 = { features = ['pandas-v20', "test"]}
+test-pandas-v21 = { features = ['pandas-v21', "test"]}
+test-pandas-v22 = { features = ["pandas-v22", "test"]}
+build-pandas-v11 = { features = ['pandas-v11', "build"]}
+build-pandas-v12 = { features = ['pandas-v12', "build"]}
+build-pandas-v13 = { features = ['pandas-v13', "build"]}
+build-pandas-v14 = { features = ['pandas-v14', "build"]}
+build-pandas-v15 = { features = ['pandas-v15', "build"]}
+build-pandas-v20 = { features = ['pandas-v20', "build"]}
+build-pandas-v21 = { features = ['pandas-v21', "build"]}
+build-pandas-v22 = { features = ["pandas-v22", "build"]}
 
 # Build
+[tool.pixi.feature.build]
+platforms = ['linux-64', 'osx-arm64', 'osx-64', 'win-64']
 [tool.pixi.feature.build.dependencies]
 cython = ">=3.0.12,<4"
 twine = ">=6.1.0,<7"
 hatch = ">=1.14.0,<2"
 pip = ">=25.0.1,<26"
 setuptools_scm = ">=8.2.1,<9"
+# cibuildwheel = ">=2.23.3,<3"
+
 [tool.pixi.feature.build.tasks]
 get_version = { cmd = [
     "python", "-m", "setuptools_scm"
@@ -124,3 +135,4 @@ sqlalchemy = ">=2.0.39,<3"
 [tool.pixi.feature.pandas-v22.dependencies]
 pandas = ">=2.2,<2.3"
 sqlalchemy = ">=2.0.39,<3"
+
