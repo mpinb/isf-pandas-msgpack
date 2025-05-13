@@ -40,7 +40,7 @@ jobs:
           # Install in default env, since installing wheels as features is not yet supported
           # This breaks the default env
           # Last checked on pixi 0.46
-          pixi add --pypi "isf_pandas_msgpack @ $wheel"
+          pixi add --pypi "isf_pandas_msgpack @ file://$wheel"
 
       - name: Run test suite
         run: pixi r -e test-pandas-v${{ matrix.pandas_version }} test
