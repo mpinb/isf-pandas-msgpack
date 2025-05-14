@@ -33,7 +33,7 @@ build-backend = "setuptools.build_meta"
 requires = ["setuptools>=74.1", "Cython", "setuptools-scm>=8"]
 
 [tool.setuptools]
-license-files = ['LICENSE.rst']
+license-files = ['LICENSE.md']
 
 [tool.setuptools.packages.find]
 where = ["src"]
