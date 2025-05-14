@@ -1,12 +1,16 @@
 import pandas as pd
-from packaging.version import Version
 import sys
 
-PANDAS_ST_200 = Version(pd.__version__).release < (2, 0, 0)
-PANDAS_ST_210 = Version(pd.__version__).release < (2, 1, 0)
-PANDAS_ST_120 = Version(pd.__version__).release < (1, 2, 0)
-PANDAS_GE_210 = Version(pd.__version__).release >= (2, 1, 0)
-PANDAS_GE_300 =  Version(pd.__version__).major >= 3
+# Get version components directly
+version_info = pd.__version__.split('.')
+MAJOR, MINOR, PATCH = map(int, version_info[:3])
+
+# Define version comparisons
+PANDAS_ST_200 = (MAJOR, MINOR) < (2, 0)
+PANDAS_ST_210 = (MAJOR, MINOR) < (2, 1)
+PANDAS_ST_120 = (MAJOR, MINOR) < (1, 2)
+PANDAS_GE_210 = (MAJOR, MINOR) >= (2, 1)
+PANDAS_GE_300 = MAJOR >= 3
 PY3 = (sys.version_info[0] >= 3)
 STRING_TYPES = (str,)
 
