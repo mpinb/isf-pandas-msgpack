@@ -1,4 +1,4 @@
-# pandas-msgpack
+# isf-pandas-msgpack
 
 [![CI](https://github.com/mpinb/isf-pandas-msgpack/actions/workflows/ci.yml/badge.svg)](https://github.com/mpinb/isf-pandas-msgpack/actions/workflows/ci.yml)
 [![Build](https://github.com/mpinb/isf-pandas-msgpack/actions/workflows/build.yml/badge.svg)](https://github.com/mpinb/isf-pandas-msgpack/actions/workflows/build.yml)
