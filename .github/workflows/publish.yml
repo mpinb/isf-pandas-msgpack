@@ -5,20 +5,14 @@ on:
     types: [published]
 
 jobs:
-  build:
-    name: Build and save artifacts
-    runs-on: ${{ matrix.os }}
-    strategy:
-      fail-fast: false
-      matrix:
-        os: [ubuntu-latest, macos-latest, windows-latest]
-        python_version: [38, 39, 310, 311, 312, 313]
-
+  build-sdist:
+    name: Build source distribution
+    runs-on: "ubuntu-latest"
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Set up pixi environments
+      - name: Set up pixi
         uses: prefix-dev/setup-pixi@v0.8.8
         with:
           pixi-version: v0.46.0
@@ -35,41 +29,97 @@ jobs:
           echo "VERSION=$VERSION" >> $GITHUB_ENV
         shell: bash
 
-      - name: Build wheel & sdist with Git tag version
+      - name: Build sdist
         env:
           SETUPTOOLS_SCM_PRETEND_VERSION: ${{ env.VERSION }}
         run: |
-          pixi r -e build-python-${{ matrix.python_version }} build
+          pixi r -e build build_sdist
         shell: bash
 
       - name: Upload build artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: build_${{ matrix.os }}_${{ matrix.python_version }}
+          name: gh-build-sdist
           path: dist/*
+
+  build-windows-wheels:
+    name: Build windows wheels for Python versions 3.8 to 3.13
+    runs-on: windows-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python_version: [38, 39, 310, 311, 312, 313]
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up pixi
+        uses: prefix-dev/setup-pixi@v0.8.8
+        with:
+          pixi-version: v0.46.0
+          cache: true
+          auth-host: prefix.dev
+          auth-token: ${{ secrets.PREFIX_DEV_TOKEN }}
+          manifest-path: pyproject.toml
+
+      - name: Extract version from Git tag
+        id: get_version
+        run: |
+          VERSION=${{ github.event.release.tag_name }}
+          echo "VERSION=$VERSION"
+          echo "VERSION=$VERSION" >> $GITHUB_ENV
+        shell: bash
+
+      - name: Build wheel
+        env:
+          SETUPTOOLS_SCM_PRETEND_VERSION: ${{ env.VERSION }}
+        run: |
+          pixi r -e build-python-${{ matrix.python_version }} build_wheel
+        shell: bash
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: gh-build-windows-wheel-${{ matrix.python_version }}
+          path: dist/*
+
+  get-build-environment:
+    name: Get build environment
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up pixi environments
+        uses: prefix-dev/setup-pixi@v0.8.8
+        with:
+          pixi-version: v0.46.0
+          cache: true
+          auth-host: prefix.dev
+          auth-token: ${{ secrets.PREFIX_DEV_TOKEN }}
+          manifest-path: pyproject.toml
 
       - name: Upload env artifacts
         uses: actions/upload-artifact@v4
-        # only upload on a single runner. it's the same on every runner anyways
-        if: ${{ runner.os == 'Linux' &&  matrix.python_version == 38 }}
         with:
           name: env
           path: |
             pyproject.toml
             pixi.lock
-
+  
   upload-to-pypi:
     name: Upload source distribution and wheels to PyPI
-    needs: build
+    needs: [build-sdist, build-windows-wheels, get-build-environment]
     runs-on: ubuntu-latest
 
     steps:
-      - name: Download env artifacts
+      - name: Download build environment
         uses: actions/download-artifact@v4
         with:
           name: env
 
-      - name: Set up pixi environments
+      - name: Set up pixi
         uses: prefix-dev/setup-pixi@v0.8.8
         with:
           pixi-version: v0.46.0
@@ -81,42 +131,9 @@ jobs:
       - name: Download build artifacts 
         uses: actions/download-artifact@v4
         with:
-          pattern: build_*
-          path: dist_zips/
+          pattern: gh-build-*
+          path: dist/
 
-      - name: Extract build artifacts
-        run: |
-          # Create target directory
-          mkdir -p dist/
-          
-          # Extract all zips, ignoring duplicates
-          for zip in dist_zips/*/; do
-            echo "Extracting artifacts from $zip"
-            # Create a temporary directory for each zip
-            mkdir -p temp_extract/
-            cp -r "$zip"/* temp_extract/
-            
-            # Handle file conflicts by skipping existing files (first one wins)
-            for file in temp_extract/*; do
-              filename=$(basename "$file")
-              if [ ! -f "dist/$filename" ]; then
-                cp "$file" dist/
-              else
-                echo "Skipping duplicate file: $filename"
-              fi
-            done
-            
-            # Clean up temp directory
-            rm -rf temp_extract/
-          done
-          
-          # List extracted files
-          echo "Files in dist directory:"
-          ls -la dist/
-          
-          # Clean up zip directories
-          rm -rf dist_zips/
-        shell: bash
       - name: Publish to PyPI
         env:
           TWINE_USERNAME: __token__

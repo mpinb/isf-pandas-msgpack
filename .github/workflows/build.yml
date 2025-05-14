@@ -1,4 +1,7 @@
 name: Build
+description: 
+  Build wheels and source distributions for Python versions 3.8 to 3.13 on three major platforms (Linux-64, macOS-arm64, and Windows-64)
+  This is to test the possibility of building the package on reasonable operating systems, not to publish it.
 
 on:
   push:
@@ -31,8 +34,6 @@ jobs:
           manifest-path: pyproject.toml
 
       - name: Build wheel & sdist
-        env:
-          SETUPTOOLS_SCM_PRETEND_VERSION: ${{ env.VERSION }}
         run: |
           pixi r -e build-python-${{ matrix.python_version }} build
         shell: bash

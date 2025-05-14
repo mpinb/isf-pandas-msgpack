@@ -78,7 +78,6 @@ hatch = ">=1.13.0,<2"
 twine = ">=5.1.1,<7"
 setuptools_scm = ">=8.1.0,<9"
 cython = ">=3.0.11,<4"
-
 [tool.pixi.feature.build.pypi-dependencies]
 build = ">=1.2.2.post1,<2"
 
@@ -92,6 +91,15 @@ build_ext = { cmd = [
 build = { cmd = [
     "python", "-m", "build", "--sdist", "--wheel"
     ], description = "Build the package" }
+build_sdist = { cmd = [
+    "python", "-m", "build", "--sdist"
+    ], description = "Build the package source distribution" }
+build_wheel = { cmd = [
+    "python", "-m", "build", "--wheel"
+    ], description = "Build the package wheel on the host machine" }
+audit_linux_wheels = { cmd = [
+    "auditwheel", "repair", "--plat", "manylinux2014_x86_64", "dist/*.whl", "-w", "dist"
+    ], description = "Repair the wheels for Linux" }
 upload = { cmd = [
     "twine", "upload", "--skip-existing", "--repository", "pypi", "dist/*"
     ], description = "Upload the package to PyPI" }
