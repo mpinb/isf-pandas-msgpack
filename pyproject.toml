@@ -20,9 +20,8 @@ license = { text = "BSD-3-Clause"}
 readme = "README.md"
 dependencies = [
     "pandas>=1.1.0,<3",
-    "packaging>=24.2,<26"
     ]
-requires-python = ">=3.6.1,<3.14"
+requires-python = ">=3.8,<3.14"
 
 [tool.pixi.project]
 channels = ["conda-forge"]
@@ -111,6 +110,7 @@ test_upload = { cmd = [
 pytest = "*"
 zlib = ">=1.3.1,<2"
 blosc = ">=1.11.2,<2"
+packaging = ">=16.0,<26"
 
 [tool.pixi.feature.test.tasks]
 test = { cmd = [
