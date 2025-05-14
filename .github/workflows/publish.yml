@@ -138,7 +138,7 @@ jobs:
         run: |
           mkdir -p dist
           cp build_artifacts/gh-build-sdist/* dist/
-          cp build_artifacts/gh-build-windows-wheel-*/dist/* dist/
+          cp build_artifacts/gh-build-windows-wheel-*/* dist/
 
       - name: Publish to PyPI
         env:
